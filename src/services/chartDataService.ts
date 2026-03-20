@@ -171,7 +171,11 @@ export const getKlines = async (
       // Minute intervals: scale days based on granularity
       const minutes = parseInt(interval);
       if (!isNaN(minutes) && minutes < 15) {
-        startDate.setDate(startDate.getDate() - 15);
+        if (minutes === 1) {
+            startDate.setDate(startDate.getDate() - 5);
+        } else {
+            startDate.setDate(startDate.getDate() - 15);
+        }
       } else {
         startDate.setDate(startDate.getDate() - 90);
       }

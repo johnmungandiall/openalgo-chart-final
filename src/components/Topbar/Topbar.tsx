@@ -252,17 +252,17 @@ const Topbar: React.FC<TopbarProps> = ({
                     // Flatten the categorized intervals into a Set for quick lookup
                     const supported = new Set<string>();
 
-                    if (data.seconds) data.seconds.forEach((v: string) => supported.add(v));
-                    if (data.minutes) data.minutes.forEach((v: string) => supported.add(v));
-                    if (data.hours) data.hours.forEach((v: string) => supported.add(v));
+                    if (data.seconds) data.seconds.forEach((v: string) => supported.add(v.endsWith('s') ? v : `${v}s`));
+                    if (data.minutes) data.minutes.forEach((v: string) => supported.add(v.endsWith('m') ? v : `${v}m`));
+                    if (data.hours) data.hours.forEach((v: string) => supported.add(v.endsWith('h') ? v : `${v}h`));
                     if (data.days) data.days.forEach((v: string) => {
-                        supported.add(v === 'D' ? '1d' : v);
+                        supported.add(v === 'D' ? '1d' : (v.endsWith('d') ? v : `${v}d`));
                     });
                     if (data.weeks) data.weeks.forEach((v: string) => {
-                        supported.add(v === 'W' ? '1w' : v);
+                        supported.add(v === 'W' ? '1w' : (v.endsWith('w') ? v : `${v}w`));
                     });
                     if (data.months) data.months.forEach((v: string) => {
-                        supported.add(v === 'M' ? '1M' : v);
+                        supported.add(v === 'M' ? '1M' : (v.endsWith('M') ? v : `${v}M`));
                     });
 
                     setBrokerIntervals(supported);
