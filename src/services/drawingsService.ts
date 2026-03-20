@@ -39,7 +39,7 @@ declare global {
 export const saveDrawings = async (
   symbol: string,
   exchange: string = 'NSE',
-  interval: string = '1d',
+  interval: string = '1m',
   drawings: Drawing[]
 ): Promise<boolean> => {
   try {
@@ -93,7 +93,7 @@ export const saveDrawings = async (
 export const loadDrawings = async (
   symbol: string,
   exchange: string = 'NSE',
-  interval: string = '1d'
+  interval: string = '1m'
 ): Promise<Drawing[] | null> => {
   const drawingsKey = `drawings_${symbol}_${exchange}_${interval}`;
 

@@ -153,7 +153,7 @@ const IST_OFFSET_SECONDS = 19800; // 5 hours 30 minutes in seconds
 export const getKlines = async (
   symbol: string,
   exchange: string = 'NSE',
-  interval: string = '1d',
+  interval: string = '1m',
   _limit: number = 1000,
   signal?: AbortSignal
 ): Promise<Candle[]> => {
@@ -290,7 +290,7 @@ export const getKlines = async (
 export const getHistoricalKlines = async (
   symbol: string,
   exchange: string = 'NSE',
-  interval: string = '1d',
+  interval: string = '1m',
   startDate: string,
   endDate: string,
   signal?: AbortSignal

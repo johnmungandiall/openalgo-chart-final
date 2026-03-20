@@ -116,7 +116,7 @@ const DEFAULT_CHART: ExtendedChartConfig = {
   id: 1,
   symbol: 'NIFTY 50',
   exchange: 'NSE',
-  interval: '1d',
+  interval: '1m',
   indicators: [],
   comparisonSymbols: [],
   strategyConfig: null,
@@ -159,7 +159,7 @@ export const useChart = (): UseChartReturn => {
   // Derived: Current properties
   const currentSymbol = activeChart.symbol || 'NIFTY 50';
   const currentExchange = activeChart.exchange || 'NSE';
-  const currentInterval = activeChart.interval || '1d';
+  const currentInterval = activeChart.interval || '1m';
 
   // ============ CHART HANDLERS ============
 
@@ -336,7 +336,7 @@ export const useChart = (): UseChartReturn => {
       id: newId,
       symbol: 'NIFTY 50',
       exchange: 'NSE',
-      interval: '1d',
+      interval: '1m',
       indicators: [],
       comparisonSymbols: [],
       strategyConfig: null,
