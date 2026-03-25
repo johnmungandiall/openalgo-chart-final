@@ -161,7 +161,18 @@ export function simulateMockTicker(
 ): { close: () => void } {
     let currentPrice = baseData[baseData.length - 1].close;
     let cumulativeVolume = baseData.reduce((sum, c) => sum + c.volume, 0);
-    const volatility = 0.0008;
+    
+    // Calculate per-tick volatility from the actual historical data
+    // so that new candles statistically match the existing ones in size.
+    const recentCandles = baseData.slice(-50);
+    const avgRange = recentCandles.reduce((sum, c) => sum + Math.abs(c.close - c.open), 0) / recentCandles.length;
+    const avgPrice = recentCandles.reduce((sum, c) => sum + c.close, 0) / recentCandles.length;
+    const candleVolatility = avgRange / avgPrice; // e.g., ~0.003
+    // Ticks per candle at 1x speed
+    const ticksPerCandle = (_intervalSeconds * 1000) / baseTickMs;
+    // Per-tick volatility = candle volatility / sqrt(ticks) (random walk scaling)
+    const perTickVolatility = candleVolatility / Math.sqrt(ticksPerCandle);
+    const perTickTrend = perTickVolatility * 0.15; // trend component = 15% of noise
     
     // Initialize simulated clock near the END of the last candle's period
     // so a new candle forms within a few seconds (not after a full interval wait).
@@ -190,9 +201,10 @@ export function simulateMockTicker(
             microTrend *= -1;
         }
         
-        // Simulate price movement
-        const trendMove = microTrend * 0.0001 * currentPrice * Math.sqrt(speed);
-        const noise = (Math.random() - 0.5) * volatility * currentPrice * Math.sqrt(speed);
+        // Per-tick price movement — volatility is pre-scaled to match historical candle size.
+        // Speed only affects tick FREQUENCY (not magnitude), so candles stay the same size.
+        const trendMove = microTrend * perTickTrend * currentPrice;
+        const noise = (Math.random() - 0.5) * perTickVolatility * currentPrice;
         currentPrice = Math.round((currentPrice + trendMove + noise) * 100) / 100;
         
         // Simulate cumulative volume increase
