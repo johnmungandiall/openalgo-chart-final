@@ -11,6 +11,7 @@ import {
 import { CanvasRenderingTarget2D } from 'fancy-canvas';
 // @ts-ignore - importing JS module from TS
 import { getAccurateISTTimestamp } from '../../../services/timeService.js';
+import { isDemoMode, getSimulatedTimestamp } from '../../../services/mockDataService';
 
 /**
  * Price Scale Timer Plugin
@@ -304,8 +305,8 @@ export class PriceScaleTimer implements ISeriesPrimitive<Time> {
 
     private _updateCountdown(): void {
         const timeframeSeconds = this._options.timeframeSeconds;
-        // Use IST time from the frontend timeService instead of local time
-        const now = Math.floor(getAccurateISTTimestamp());
+        // In demo mode, use simulated time (accelerated by speed); otherwise real IST time
+        const now = Math.floor(isDemoMode() ? getSimulatedTimestamp() : getAccurateISTTimestamp());
 
         let candleOpenTime: number | null = null;
 

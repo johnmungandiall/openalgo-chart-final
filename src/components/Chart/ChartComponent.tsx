@@ -42,6 +42,7 @@ import { TPOProfilePrimitive } from '../../plugins/tpo-profile/TPOProfilePrimiti
 import { intervalToSeconds } from '../../utils/timeframes';
 import { logger } from '../../utils/logger.js';
 import { isDemoMode, generateMockOHLCData, simulateMockTicker } from '../../services/mockDataService';
+import DemoSpeedControl from './DemoSpeedControl';
 
 import { LineToolManager } from '../../plugins/line-tools/line-tool-manager';
 import { PriceScaleTimer } from '../../plugins/line-tools/tools/price-scale-timer';
@@ -202,6 +203,14 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
     const [tpoLocalSettings, setTpoLocalSettings] = useState({}); // Local TPO settings storage (workaround for broken parent callback)
     // Comparison symbol price labels - { symbol: { price, y, color } }
     const [comparisonPriceLabels, setComparisonPriceLabels] = useState({});
+
+    // Demo mode speed control
+    const [demoSpeed, setDemoSpeed] = useState(1);
+    const demoSpeedRef = useRef(1);
+    const handleDemoSpeedChange = useCallback((speed: number) => {
+        setDemoSpeed(speed);
+        demoSpeedRef.current = speed;
+    }, []);
 
     const [chartInstance, setChartInstance] = useState(null);
     useChartResize(chartContainerRef, chartInstance);
@@ -2640,15 +2649,15 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
                             );
                         });
                     } else if (isDemoMode()) {
-                        // Demo mode: simulate real-time ticks
+                        // Demo mode: simulate real-time ticks with new candle creation
+                        const demoIntervalSec = intervalToSeconds(interval);
                         const mockTicker = simulateMockTicker(
                             data,
-                            intervalToSeconds(interval),
+                            demoIntervalSec,
                             (ticker) => {
                                 if (cancelled || !ticker) return;
 
                                 const closePrice = Number(ticker.close);
-                                const tickVolume = Number(ticker.volume) || 0;
                                 if (!Number.isFinite(closePrice) || closePrice <= 0) return;
 
                                 const currentData = dataRef.current;
@@ -2659,24 +2668,44 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
                                 if (!Number.isFinite(intSec) || intSec <= 0) return;
 
                                 const lastIdx = currentData.length - 1;
-                                const existingCandle = currentData[lastIdx];
+                                const lastCandleTime = currentData[lastIdx].time;
 
-                                const candle = {
-                                    time: existingCandle.time,
-                                    open: existingCandle.open,
-                                    high: Math.max(existingCandle.high, closePrice),
-                                    low: Math.min(existingCandle.low, closePrice),
-                                    close: closePrice,
-                                    volume: existingCandle.volume + Math.floor(Math.random() * 500),
-                                };
-                                currentData[lastIdx] = candle;
+                                // Use simulated time (accelerated by speed) for candle boundaries
+                                const simTime = ticker.simulatedTime;
+                                const currentCandleTime = Math.floor(simTime / intSec) * intSec;
+                                const needNewCandle = currentCandleTime > lastCandleTime;
+
+                                let candle;
+                                if (needNewCandle) {
+                                    // Create new candle
+                                    candle = {
+                                        time: currentCandleTime,
+                                        open: closePrice,
+                                        high: closePrice,
+                                        low: closePrice,
+                                        close: closePrice,
+                                        volume: Math.floor(Math.random() * 5000),
+                                    };
+                                    currentData.push(candle);
+                                    logger.debug('[DEMO] New candle at', currentCandleTime, 'price:', closePrice);
+                                } else {
+                                    // Update existing candle
+                                    const existingCandle = currentData[lastIdx];
+                                    candle = {
+                                        time: existingCandle.time,
+                                        open: existingCandle.open,
+                                        high: Math.max(existingCandle.high, closePrice),
+                                        low: Math.min(existingCandle.low, closePrice),
+                                        close: closePrice,
+                                        volume: existingCandle.volume + Math.floor(Math.random() * 500),
+                                    };
+                                    currentData[lastIdx] = candle;
+                                }
                                 dataRef.current = currentData;
 
-                                const currentChartType = chartTypeRef.current;
-                                const transformedCandle = transformData([candle], currentChartType)[0];
-
-                                if (transformedCandle && mainSeriesRef.current && !isReplayModeRef.current) {
+                                if (mainSeriesRef.current && !isReplayModeRef.current) {
                                     try {
+                                        const currentChartType = chartTypeRef.current;
                                         const transformedFullData = transformData(currentData, currentChartType);
                                         const dataWithFuture = addFutureWhitespacePoints(transformedFullData, intSec);
                                         mainSeriesRef.current.setData(dataWithFuture);
@@ -2687,9 +2716,14 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
                                     updateRealtimeIndicators(currentData);
                                     updateAxisLabel();
                                     updateOhlcFromLatest();
+
+                                    if (priceScaleTimerRef.current) {
+                                        priceScaleTimerRef.current.updateCandleData(candle.open, candle.close);
+                                    }
                                 }
                             },
-                            800 // tick every 800ms
+                            () => demoSpeedRef.current,
+                            800
                         );
                         wsRef.current = mockTicker;
                     } else {
@@ -5422,6 +5456,11 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
                     />
                 );
             })()}
+
+            {/* Demo Mode Speed Control */}
+            {isDemoMode() && (
+                <DemoSpeedControl speed={demoSpeed} onSpeedChange={handleDemoSpeedChange} />
+            )}
 
         </div >
 

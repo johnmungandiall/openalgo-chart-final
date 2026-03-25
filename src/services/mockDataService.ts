@@ -92,29 +92,98 @@ export function generateMockOHLCData(
     return candles;
 }
 
+// ─── Simulated Clock ────────────────────────────────────────────────────────────
+// A global simulated clock that advances faster based on speed multiplier.
+// Used by both the mock ticker (for new candle creation) and PriceScaleTimer
+// (for accelerated countdown).
+
+let _simBaseWallTime = 0;     // Wall clock snapshot when sim started or speed changed
+let _simBaseSimTime = 0;      // Simulated time at that snapshot
+let _simSpeed = 1;            // Current speed multiplier
+
+/**
+ * Initialize the simulated clock. Call once when demo mode starts.
+ * seedTime should be the last candle's time + intervalSeconds (start of current candle).
+ */
+export function initSimulatedClock(seedTime: number): void {
+    _simBaseWallTime = Date.now() / 1000;
+    _simBaseSimTime = seedTime;
+    _simSpeed = 1;
+}
+
+/**
+ * Update the speed multiplier. Only re-snapshots when speed actually changes
+ * to avoid precision loss from repeated Math.floor truncation.
+ */
+export function setSimulatedSpeed(speed: number): void {
+    if (speed === _simSpeed) return; // No change, skip re-snapshot
+    
+    // Snapshot current sim time before changing speed (use raw, untruncated value)
+    const elapsedWall = (Date.now() / 1000) - _simBaseWallTime;
+    const currentSimTime = _simBaseSimTime + elapsedWall * _simSpeed;
+    _simBaseWallTime = Date.now() / 1000;
+    _simBaseSimTime = currentSimTime;
+    _simSpeed = speed;
+}
+
+/**
+ * Get current simulated IST timestamp (in seconds, integer).
+ * Advances at `speed` × real wall-clock rate.
+ */
+export function getSimulatedTimestamp(): number {
+    if (!isDemoMode()) {
+        return Math.floor(Date.now() / 1000); // Fallback to real time
+    }
+    const elapsedWall = (Date.now() / 1000) - _simBaseWallTime;
+    return Math.floor(_simBaseSimTime + elapsedWall * _simSpeed);
+}
+
+/**
+ * Get the current simulation speed
+ */
+export function getSimulatedSpeed(): number {
+    return _simSpeed;
+}
+
+// ─── Mock Ticker ────────────────────────────────────────────────────────────────
+
 /**
  * Simulate real-time WebSocket ticks on mock data.
- * Returns a cleanup function (like WebSocket.close).
- * 
- * Calls the ticker callback every `tickIntervalMs` with
- * a simulated price update on the latest candle.
+ * Supports dynamic speed control via getSpeed callback.
+ * Returns a cleanup object with close().
  */
 export function simulateMockTicker(
     baseData: MockCandle[],
-    intervalSeconds: number,
-    tickCallback: (ticker: { close: number; volume: number }) => void,
-    tickIntervalMs: number = 1000
+    _intervalSeconds: number,
+    tickCallback: (ticker: { close: number; volume: number; simulatedTime: number }) => void,
+    getSpeed: () => number = () => 1,
+    baseTickMs: number = 800
 ): { close: () => void } {
     let currentPrice = baseData[baseData.length - 1].close;
     let cumulativeVolume = baseData.reduce((sum, c) => sum + c.volume, 0);
     const volatility = 0.0008;
     
-    // Small trend bias that slowly oscillates
+    // Initialize simulated clock near the END of the last candle's period
+    // so a new candle forms within a few seconds (not after a full interval wait).
+    // Last candle spans [lastCandleTime, lastCandleTime + interval).
+    // Seed clock 5 seconds before the next boundary.
+    const lastCandleTime = baseData[baseData.length - 1].time;
+    const seedTime = lastCandleTime + _intervalSeconds - 5;
+    initSimulatedClock(seedTime);
+    
     let microTrend = Math.random() > 0.5 ? 1 : -1;
     let tickCount = 0;
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+    let stopped = false;
     
-    const timer = setInterval(() => {
+    const tick = () => {
+        if (stopped) return;
+        
         tickCount++;
+        const speed = getSpeed();
+        
+        // Keep simulated clock in sync with current speed
+        setSimulatedSpeed(speed);
         
         // Switch micro-trend occasionally
         if (tickCount % (15 + Math.floor(Math.random() * 20)) === 0) {
@@ -122,20 +191,31 @@ export function simulateMockTicker(
         }
         
         // Simulate price movement
-        const trendMove = microTrend * 0.0001 * currentPrice;
-        const noise = (Math.random() - 0.5) * volatility * currentPrice;
+        const trendMove = microTrend * 0.0001 * currentPrice * Math.sqrt(speed);
+        const noise = (Math.random() - 0.5) * volatility * currentPrice * Math.sqrt(speed);
         currentPrice = Math.round((currentPrice + trendMove + noise) * 100) / 100;
         
         // Simulate cumulative volume increase
-        cumulativeVolume += Math.floor(500 + Math.random() * 2000);
+        cumulativeVolume += Math.floor((500 + Math.random() * 2000) * speed);
         
         tickCallback({
             close: currentPrice,
-            volume: cumulativeVolume
+            volume: cumulativeVolume,
+            simulatedTime: getSimulatedTimestamp()
         });
-    }, tickIntervalMs);
+        
+        // Schedule next tick: faster at higher speed
+        const nextInterval = Math.max(50, Math.floor(baseTickMs / speed));
+        timerId = setTimeout(tick, nextInterval);
+    };
+    
+    // Start first tick
+    timerId = setTimeout(tick, baseTickMs);
     
     return {
-        close: () => clearInterval(timer)
+        close: () => {
+            stopped = true;
+            if (timerId) clearTimeout(timerId);
+        }
     };
 }
