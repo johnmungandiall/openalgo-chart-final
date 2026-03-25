@@ -3020,6 +3020,62 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
                     }
                 }
             });
+
+            // --- REAL-TIME MARKER REFRESH ---
+            // Recalculate markers from all visible marker-producing indicators
+            // so buy/sell signals update on every tick (not just on initial load).
+            const realtimeMarkers: any[] = [];
+
+            currentIndicators.forEach(ind => {
+                if (!ind.visible) return;
+
+                if (ind.type === 'utBotAlerts') {
+                    const { keyValues = 1, atrPeriod = 10, showSignals, upColor, downColor } = ind;
+                    const utResult = calculateUTBotAlerts(data, keyValues, atrPeriod);
+                    if (utResult && utResult.length > 0 && showSignals !== false) {
+                        utResult.forEach(d => {
+                            if (d.buy) {
+                                realtimeMarkers.push({
+                                    time: d.time,
+                                    position: 'belowBar',
+                                    color: upColor || '#26A69A',
+                                    shape: 'arrowUp',
+                                    text: 'Buy'
+                                });
+                            } else if (d.sell) {
+                                realtimeMarkers.push({
+                                    time: d.time,
+                                    position: 'aboveBar',
+                                    color: downColor || '#EF5350',
+                                    shape: 'arrowDown',
+                                    text: 'Sell'
+                                });
+                            }
+                        });
+                    }
+                } else if (ind.type === 'annStrategy') {
+                    const annResult = calculateANNStrategy(data, {
+                        threshold: ind.threshold || 0.0014,
+                        longColor: ind.longColor || '#26A69A',
+                        shortColor: ind.shortColor || '#EF5350',
+                        showSignals: ind.showSignals !== false,
+                        showBackground: ind.showBackground !== false
+                    });
+                    if (annResult.markers && annResult.markers.length > 0) {
+                        realtimeMarkers.push(...annResult.markers);
+                    }
+                }
+            });
+
+            // Update markers on chart if any marker-producing indicators are active
+            if (mainSeriesRef.current && seriesMarkersRef.current) {
+                try {
+                    realtimeMarkers.sort((a, b) => a.time - b.time);
+                    seriesMarkersRef.current.setMarkers(realtimeMarkers);
+                } catch (e) {
+                    // Silently ignore marker update errors during real-time
+                }
+            }
         }
     }, []);
 
