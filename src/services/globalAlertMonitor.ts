@@ -7,7 +7,7 @@
  */
 
 import { getJSON, setJSON, STORAGE_KEYS } from './storageService';
-import { subscribeToMultiTicker } from './openalgo';
+import { subscribeToMultiTicker, getKlines } from './openalgo';
 import logger from '../utils/logger';
 import { IndicatorDataManager } from './indicatorDataManager';
 import { AlertEvaluator } from '../utils/alerts/alertEvaluator';
@@ -150,6 +150,9 @@ class GlobalAlertMonitor {
   /** Debounce timer for storage change events */
   private _storageChangeDebounceTimer: ReturnType<typeof setTimeout> | null;
 
+  /** Track last fetch time for symbol-interval to prevent API spam */
+  private _lastFetchTime: Map<string, number>;
+
   constructor() {
     this._lastPrices = new Map();
     this._alertPositions = new Map();
@@ -165,6 +168,7 @@ class GlobalAlertMonitor {
     this._cacheRefreshIntervalId = null;
     this._cleanupIntervalId = null;
     this._storageChangeDebounceTimer = null;
+    this._lastFetchTime = new Map();
 
     // Listen for storage changes from other tabs
     this._handleStorageChange = this._onStorageChange.bind(this);
@@ -471,13 +475,18 @@ class GlobalAlertMonitor {
           const interval = alert.interval || '1m';
           const cacheKey = `${key}:${interval}:${indicatorId}`;
 
-          const ohlcData = this._getOHLCData(symbol, exchange, interval);
+          let ohlcData = this._getOHLCData(symbol, exchange, interval);
 
           if (!ohlcData || ohlcData.length === 0) {
-            logger.debug(
-              `[GlobalAlertMonitor] No OHLC data for ${symbol}:${exchange}:${interval}, skipping indicator alert`
-            );
-            continue;
+            // Data not currently in cache, fetch it on-demand
+            const fetched = await this._fetchAndCacheOHLCData(symbol, exchange, interval);
+            if (!fetched || fetched.length === 0) {
+              logger.debug(
+                `[GlobalAlertMonitor] No OHLC data for ${symbol}:${exchange}:${interval} after fetch, skipping indicator alert`
+              );
+              continue;
+            }
+            ohlcData = fetched;
           }
 
           logger.debug(
@@ -617,6 +626,37 @@ class GlobalAlertMonitor {
 
     cached.lastAccessed = Date.now();
     return cached.data;
+  }
+
+  /**
+   * Fetch OHLC data on-demand if cache misses
+   */
+  private async _fetchAndCacheOHLCData(symbol: string, exchange: string, interval: string): Promise<OHLCBar[] | null> {
+    const normalizedInterval = this._normalizeInterval(interval);
+    const key = `${symbol}:${exchange}:${normalizedInterval}`;
+    const now = Date.now();
+
+    // Throttle fetches: max 1 per symbol-interval every 30 seconds
+    const lastFetch = this._lastFetchTime.get(key) || 0;
+    if (now - lastFetch < 30000) {
+      return null;
+    }
+
+    try {
+      this._lastFetchTime.set(key, now);
+      logger.debug(`[GlobalAlertMonitor] Fetching on-demand OHLC data for ${key}`);
+      
+      const data = await getKlines(symbol, exchange, interval, 1000);
+      
+      if (data && data.length > 0) {
+        this.updateOHLCData(symbol, exchange, interval, data);
+        return data as OHLCBar[];
+      }
+    } catch (error) {
+      logger.error(`[GlobalAlertMonitor] Error fetching on-demand OHLC data for ${key}:`, error);
+    }
+    
+    return null;
   }
 
   /**
