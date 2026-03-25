@@ -41,6 +41,7 @@ import { createRiskCalculatorPrimitive, removeRiskCalculatorPrimitive } from '..
 import { TPOProfilePrimitive } from '../../plugins/tpo-profile/TPOProfilePrimitive';
 import { intervalToSeconds } from '../../utils/timeframes';
 import { logger } from '../../utils/logger.js';
+import { isDemoMode, generateMockOHLCData, simulateMockTicker } from '../../services/mockDataService';
 
 import { LineToolManager } from '../../plugins/line-tools/line-tool-manager';
 import { PriceScaleTimer } from '../../plugins/line-tools/tools/price-scale-timer';
@@ -2461,6 +2462,11 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
                     // Combine into single premium data using direction-aware calculation
                     data = combineMultiLegOHLC(legDataArrays, strategyConfig.legs);
                     logger.debug('[Strategy] Combined data length:', data.length, 'from', strategyConfig.legs.length, 'legs');
+                } else if (isDemoMode()) {
+                    // Demo mode: generate mock data for testing
+                    const intervalSec = intervalToSeconds(interval);
+                    data = generateMockOHLCData(500, intervalSec, 23500, 0.004);
+                    logger.debug('[DEMO] Generated', data.length, 'mock candles');
                 } else {
                     // Regular symbol mode
                     data = await getKlines(symbol, exchange, interval, 1000, abortController.signal);
@@ -2633,6 +2639,59 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
                                 handleStrategyTick(leg)
                             );
                         });
+                    } else if (isDemoMode()) {
+                        // Demo mode: simulate real-time ticks
+                        const mockTicker = simulateMockTicker(
+                            data,
+                            intervalToSeconds(interval),
+                            (ticker) => {
+                                if (cancelled || !ticker) return;
+
+                                const closePrice = Number(ticker.close);
+                                const tickVolume = Number(ticker.volume) || 0;
+                                if (!Number.isFinite(closePrice) || closePrice <= 0) return;
+
+                                const currentData = dataRef.current;
+                                if (!currentData || currentData.length === 0) return;
+
+                                const currentInterval = intervalRef.current;
+                                const intSec = intervalToSeconds(currentInterval);
+                                if (!Number.isFinite(intSec) || intSec <= 0) return;
+
+                                const lastIdx = currentData.length - 1;
+                                const existingCandle = currentData[lastIdx];
+
+                                const candle = {
+                                    time: existingCandle.time,
+                                    open: existingCandle.open,
+                                    high: Math.max(existingCandle.high, closePrice),
+                                    low: Math.min(existingCandle.low, closePrice),
+                                    close: closePrice,
+                                    volume: existingCandle.volume + Math.floor(Math.random() * 500),
+                                };
+                                currentData[lastIdx] = candle;
+                                dataRef.current = currentData;
+
+                                const currentChartType = chartTypeRef.current;
+                                const transformedCandle = transformData([candle], currentChartType)[0];
+
+                                if (transformedCandle && mainSeriesRef.current && !isReplayModeRef.current) {
+                                    try {
+                                        const transformedFullData = transformData(currentData, currentChartType);
+                                        const dataWithFuture = addFutureWhitespacePoints(transformedFullData, intSec);
+                                        mainSeriesRef.current.setData(dataWithFuture);
+                                    } catch (err) {
+                                        logger.warn('[DEMO] Failed to update chart:', err);
+                                    }
+
+                                    updateRealtimeIndicators(currentData);
+                                    updateAxisLabel();
+                                    updateOhlcFromLatest();
+                                }
+                            },
+                            800 // tick every 800ms
+                        );
+                        wsRef.current = mockTicker;
                     } else {
                         // Regular symbol mode
                         // LOW FIX ML-13: Use refs to avoid capturing large objects in closure
