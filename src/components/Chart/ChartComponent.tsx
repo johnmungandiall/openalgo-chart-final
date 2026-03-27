@@ -2703,6 +2703,11 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
                                 }
                                 dataRef.current = currentData;
 
+                                // Share updated DEMO OHLC data with GlobalAlertMonitor
+                                if (onOHLCDataUpdateRef.current && symbol && interval && currentData.length > 0) {
+                                    onOHLCDataUpdateRef.current(symbol, exchange, interval, currentData);
+                                }
+
                                 if (mainSeriesRef.current && !isReplayModeRef.current) {
                                     try {
                                         const currentChartType = chartTypeRef.current;

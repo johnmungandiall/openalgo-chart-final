@@ -499,7 +499,8 @@ class GlobalAlertMonitor {
             ohlcData
           );
 
-          const previousData = this._previousIndicatorValues.get(cacheKey);
+          // Use indicatorData.previous as fallback for first tick evaluation
+          const previousData = this._previousIndicatorValues.get(cacheKey) || (indicatorData ? indicatorData.previous : undefined);
 
           if (indicatorData && indicatorData.current) {
             const previousPrice = this._lastPrices.get(key);
@@ -582,6 +583,23 @@ class GlobalAlertMonitor {
     }
 
     logger.debug(`[GlobalAlertMonitor] Updated OHLC cache for ${cacheKey}, bars: ${ohlcData.length}`);
+
+    // Trigger price update evaluation using the latest candle's data.
+    // This is crucial for DEMO mode where the global WebSocket receives no ticks,
+    // but the chart component pushes synthetic demo ticks here.
+    const lastCandle = ohlcData[ohlcData.length - 1];
+    if (lastCandle && lastCandle.close !== undefined) {
+      this._onPriceUpdate({
+        symbol,
+        exchange,
+        last: lastCandle.close,
+        open: lastCandle.open,
+        high: lastCandle.high,
+        low: lastCandle.low,
+        volume: lastCandle.volume,
+        timestamp: lastCandle.time
+      }).catch(err => logger.error('[GlobalAlertMonitor] Demo/Internal price update error:', err));
+    }
   }
 
   /**
