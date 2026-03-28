@@ -35,9 +35,10 @@ export interface StoredAlert {
   interval?: string | undefined;
   alertType?: string | undefined;
   value?: number | undefined;
-  frequency?: 'once_per_bar' | 'every_time' | undefined;
+  frequency?: 'once_per_bar' | 'every_time' | 'only_once' | 'once_per_bar_close' | undefined;
   message?: string | undefined;
   alert_type?: string | undefined;
+  webhookUrl?: string | undefined;
 }
 
 /** Alert trigger event */
@@ -54,6 +55,7 @@ export interface AlertTriggerEvent {
   indicator?: string | undefined;
   conditionType?: string | undefined;
   message?: string | undefined;
+  webhookUrl?: string | undefined;
 }
 
 /** Price update data */
@@ -138,6 +140,9 @@ class GlobalAlertMonitor {
   /** Last time alerts were loaded from localStorage */
   private _lastCacheRefresh: number;
 
+  /** Track last bar triggered time for once_per_bar frequency */
+  private _alertTriggerTimes: Map<string, number>;
+
   /** Cache refresh interval ID */
   private _cacheRefreshIntervalId: ReturnType<typeof setInterval> | null;
 
@@ -169,6 +174,7 @@ class GlobalAlertMonitor {
     this._cleanupIntervalId = null;
     this._storageChangeDebounceTimer = null;
     this._lastFetchTime = new Map();
+    this._alertTriggerTimes = new Map();
 
     // Listen for storage changes from other tabs
     this._handleStorageChange = this._onStorageChange.bind(this);
@@ -246,6 +252,7 @@ class GlobalAlertMonitor {
             exchange: alert.exchange || 'NSE',
             alertType: alert.alert_type,
             price: alert.value || 0,
+            webhookUrl: (alert as any).webhookUrl || undefined,
           });
         }
       }
@@ -410,6 +417,7 @@ class GlobalAlertMonitor {
           conditionType: condition.type,
           timestamp: Date.now(),
           message: alert.message || `${alert.indicator} ${condition.label}`,
+          webhookUrl: alert.webhookUrl,
         };
       }
 
@@ -513,15 +521,28 @@ class GlobalAlertMonitor {
             );
 
             if (triggerEvent) {
-              logger.debug('[GlobalAlertMonitor] Indicator alert triggered:', triggerEvent);
-
               const frequency = alert.frequency || 'once_per_bar';
-              if (frequency === 'once_per_bar') {
-                this._markIndicatorAlertTriggered(alert.id);
-              }
+              const currentBarTime = (indicatorData.current.time as number) || 0;
+              const lastTriggeredTime = this._alertTriggerTimes.get(alert.id);
+              
+              const isOncePerBar = frequency === 'once_per_bar' || frequency === 'once_per_bar_close'; // Treat close same as once_per_bar for now as evaluation happens real-time
+              const isOnlyOnce = frequency === 'only_once';
 
-              if (this._onTrigger) {
-                this._onTrigger(triggerEvent);
+              // If it's once per bar, only trigger if we haven't triggered on this exact bar time yet
+              if (!isOncePerBar || lastTriggeredTime !== currentBarTime) {
+                logger.debug('[GlobalAlertMonitor] Indicator alert triggered:', triggerEvent);
+
+                if (isOncePerBar) {
+                  this._alertTriggerTimes.set(alert.id, currentBarTime);
+                }
+
+                if (isOnlyOnce) {
+                  this._markIndicatorAlertTriggered(alert.id);
+                }
+
+                if (this._onTrigger) {
+                  this._onTrigger(triggerEvent);
+                }
               }
             }
 

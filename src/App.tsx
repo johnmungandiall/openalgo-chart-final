@@ -11,6 +11,7 @@ import SnapshotToast from './components/Toast/SnapshotToast';
 // html2canvas is lazy loaded in useToolHandlers.ts when screenshot is taken
 import { getTickerPrice, subscribeToMultiTicker, checkAuth, closeAllWebSockets, forceCloseAllWebSockets, saveUserPreferences, modifyOrder, cancelOrder, getKlines } from './services/openalgo';
 import { globalAlertMonitor } from './services/globalAlertMonitor';
+import { sendWebhook } from './services/webhookService';
 
 import BottomBar from './components/BottomBar/BottomBar';
 import ChartGrid from './components/Chart/ChartGrid';
@@ -296,6 +297,30 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
         setAlerts(prev => prev.map(a =>
           a.id === evt.alertId ? { ...a, status: 'Triggered' } : a
         ));
+      }
+
+      // Send webhook POST for indicator alerts with a configured webhookUrl
+      if (evt.webhookUrl) {
+        const webhookPayload = {
+          symbol: evt.symbol,
+          exchange: evt.exchange || 'NSE',
+          price: evt.currentPrice || 0,
+          direction: (evt.conditionType === 'equals' ? 'up' : 'up') as 'up' | 'down',
+          condition: evt.condition || '',
+          timestamp: Date.now(),
+          message: evt.message,
+        };
+        sendWebhook(evt.webhookUrl, webhookPayload)
+          .then(result => {
+            if (result.success) {
+              showToast('✓ Webhook sent', 'success');
+            } else {
+              showToast(`✗ Webhook failed: ${result.error}`, 'error');
+            }
+          })
+          .catch(err => {
+            showToast(`✗ Webhook error: ${err.message || err}`, 'error');
+          });
       }
     };
 

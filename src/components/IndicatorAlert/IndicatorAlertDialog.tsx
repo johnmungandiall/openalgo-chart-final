@@ -10,10 +10,11 @@ import {
     ALERT_CONDITION_TYPES,
 } from '../../utils/alerts/alertConditions';
 import { getDefaultMessageTemplate, AVAILABLE_PLACEHOLDERS } from '../../utils/alerts/alertMessageTemplate';
+import { safeParseJSON } from '../../utils/appUtils';
 import DynamicConditionConfig from './DynamicConditionConfig';
 
 type Theme = 'dark' | 'light';
-type Frequency = 'once_per_bar' | 'every_time';
+type Frequency = 'once_per_bar' | 'once_per_bar_close' | 'every_time' | 'only_once';
 
 interface ConditionConfig {
     id: string;
@@ -468,13 +469,16 @@ const IndicatorAlertDialog: FC<IndicatorAlertDialogProps> = ({
                                             value={frequency}
                                             onChange={(e: ChangeEvent<HTMLSelectElement>) => setFrequency(e.target.value as Frequency)}
                                         >
-                                            <option value="once_per_bar">Once Per Bar Close</option>
+                                            <option value="once_per_bar">Once Per Bar</option>
+                                            <option value="once_per_bar_close">Once Per Bar Close</option>
                                             <option value="every_time">Every Time Condition Meets</option>
+                                            <option value="only_once">Only Once (Self Removes)</option>
                                         </select>
                                         <small className={styles.fieldHint}>
-                                            {frequency === 'once_per_bar'
-                                                ? 'Alert triggers once then removes itself'
-                                                : 'Alert triggers every time condition is met'}
+                                            {frequency === 'once_per_bar' && 'Alert triggers once per candle/bar'}
+                                            {frequency === 'once_per_bar_close' && 'Alert triggers only when candle closes'}
+                                            {frequency === 'every_time' && 'Alert triggers continuously while condition is met'}
+                                            {frequency === 'only_once' && 'Alert triggers exactly once then removes itself'}
                                         </small>
                                     </div>
 
@@ -500,9 +504,45 @@ const IndicatorAlertDialog: FC<IndicatorAlertDialogProps> = ({
                                     </div>
 
                                     <div className={styles.field}>
-                                        <label htmlFor="alert-webhook" className={styles.label}>
-                                            Webhook URL <span className={styles.optional}>(Optional)</span>
-                                        </label>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px' }}>
+                                            <label htmlFor="alert-webhook" className={styles.label} style={{ marginBottom: 0 }}>
+                                                Webhook URL <span className={styles.optional}>(Optional)</span>
+                                            </label>
+                                            {webhookUrl && (
+                                                <button
+                                                    type="button"
+                                                    onClick={async () => {
+                                                        try {
+                                                            const isLocalUrl = webhookUrl.startsWith('/') || webhookUrl.includes('localhost') || webhookUrl.includes('127.0.0.1');
+                                                            const parsedMsg = safeParseJSON(message, null);
+                                                            const body = parsedMsg ? JSON.stringify(parsedMsg) : JSON.stringify({ message });
+                                                            const res = await fetch(webhookUrl, {
+                                                                method: 'POST',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                                ...(isLocalUrl ? { credentials: 'include' as RequestCredentials } : {}),
+                                                                body
+                                                            });
+                                                            if (res.ok) alert(`✅ Webhook sent successfully! (Status: ${res.status})`);
+                                                            else alert(`❌ Webhook failed! (Status: ${res.status})`);
+                                                        } catch (err: any) {
+                                                            alert(`❌ Webhook error: ${err.message}`);
+                                                        }
+                                                    }}
+                                                    style={{
+                                                        fontSize: '11px',
+                                                        padding: '4px 8px',
+                                                        borderRadius: '4px',
+                                                        background: 'var(--tv-color-active)',
+                                                        color: '#fff',
+                                                        border: 'none',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                    title="Send a sample POST request to test the URL"
+                                                >
+                                                    Test Connection
+                                                </button>
+                                            )}
+                                        </div>
                                         <input
                                             id="alert-webhook"
                                             type="url"

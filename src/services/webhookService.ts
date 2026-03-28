@@ -126,12 +126,16 @@ export async function sendWebhook(url: string, payload: WebhookPayload): Promise
             });
         }
 
+        // Use credentials: 'include' only for localhost/proxy URLs
+        // External URLs (Supabase, etc.) fail CORS with credentials: 'include'
+        const isLocalUrl = url.startsWith('/') || url.includes('localhost') || url.includes('127.0.0.1');
+
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            credentials: 'include',
+            ...(isLocalUrl ? { credentials: 'include' as RequestCredentials } : {}),
             body: bodyContent,
         });
 
