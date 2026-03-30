@@ -12,6 +12,7 @@ import SnapshotToast from './components/Toast/SnapshotToast';
 import { getTickerPrice, subscribeToMultiTicker, checkAuth, closeAllWebSockets, forceCloseAllWebSockets, saveUserPreferences, modifyOrder, cancelOrder, getKlines } from './services/openalgo';
 import { globalAlertMonitor } from './services/globalAlertMonitor';
 import { sendWebhook } from './services/webhookService';
+import './utils/debugAlerts'; // Load debug utilities in development
 
 import BottomBar from './components/BottomBar/BottomBar';
 import ChartGrid from './components/Chart/ChartGrid';
