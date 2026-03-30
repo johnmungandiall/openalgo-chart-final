@@ -336,7 +336,7 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
       clearTimeout(timer);
       globalAlertMonitor.stop();
     };
-  }, [isAuthenticated, showToast]);
+  }, [showToast]); // Removed isAuthenticated dependency - monitor always runs
 
   // Handler to share OHLC data with GlobalAlertMonitor for indicator alerts
   const handleOHLCDataUpdate = useCallback((symbol, exchange, interval, ohlcData) => {
