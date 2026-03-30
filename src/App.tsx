@@ -586,16 +586,11 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
 
   // Order handlers are now provided by useOrderHandlers hook
 
-  // Cleanup all WebSocket connections on app exit (beforeunload)
+  // Cleanup all WebSocket connections on app exit
   // This ensures proper unsubscription like the Python API: client.unsubscribe_ltp() + client.disconnect()
   useEffect(() => {
     const handleBeforeUnload = () => {
       // Use forceClose for immediate cleanup on page unload (no time for unsubscribe delay)
-      forceCloseAllWebSockets();
-    };
-
-    const handleUnload = () => {
-      // Fallback for unload event
       forceCloseAllWebSockets();
     };
 
@@ -607,13 +602,12 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
     };
 
     // Add event listeners
+    // Note: 'unload' event is deprecated and removed - 'beforeunload' is sufficient
     window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('unload', handleUnload);
     window.addEventListener('oa-show-toast', handleExternalToast);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('unload', handleUnload);
       window.removeEventListener('oa-show-toast', handleExternalToast);
       // Also close all WebSockets when App component unmounts
       closeAllWebSockets();
