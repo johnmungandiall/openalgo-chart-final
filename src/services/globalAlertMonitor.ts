@@ -56,6 +56,7 @@ export interface AlertTriggerEvent {
   conditionType?: string | undefined;
   message?: string | undefined;
   webhookUrl?: string | undefined;
+  frequency?: 'once_per_bar' | 'every_time' | 'only_once' | 'once_per_bar_close' | undefined;
 }
 
 /** Price update data */
@@ -418,6 +419,8 @@ class GlobalAlertMonitor {
           timestamp: Date.now(),
           message: alert.message || `${alert.indicator} ${condition.label}`,
           webhookUrl: alert.webhookUrl,
+          currentPrice: currentPrice ?? undefined,
+          frequency: alert.frequency,
         };
       }
 
@@ -688,7 +691,25 @@ class GlobalAlertMonitor {
       const data = await getKlines(symbol, exchange, interval, 1000);
       
       if (data && data.length > 0) {
-        this.updateOHLCData(symbol, exchange, interval, data);
+        // Cache directly instead of calling updateOHLCData to avoid
+        // re-entrant _onPriceUpdate call (updateOHLCData triggers _onPriceUpdate)
+        const cacheKey = key;
+        this._ohlcCache.set(cacheKey, {
+          data: data as OHLCBar[],
+          timestamp: now,
+          lastAccessed: now,
+        });
+
+        if (normalizedInterval !== interval) {
+          const originalKey = `${symbol}:${exchange}:${interval}`;
+          this._ohlcCache.set(originalKey, {
+            data: data as OHLCBar[],
+            timestamp: now,
+            lastAccessed: now,
+          });
+        }
+
+        logger.debug(`[GlobalAlertMonitor] Cached on-demand OHLC data for ${cacheKey}, bars: ${(data as OHLCBar[]).length}`);
         return data as OHLCBar[];
       }
     } catch (error) {

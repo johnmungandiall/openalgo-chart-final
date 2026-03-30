@@ -293,7 +293,8 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
       setGlobalAlertPopups(prev => [...prev, { ...evt, id: evt.alertId || crypto.randomUUID() }]);
 
       // Update alert status in React state (for indicator alerts)
-      if (evt.alertType === 'indicator' && evt.alertId) {
+      // Only mark as 'Triggered' for only_once frequency — other frequencies should keep monitoring
+      if (evt.alertType === 'indicator' && evt.alertId && evt.frequency === 'only_once') {
         setAlerts(prev => prev.map(a =>
           a.id === evt.alertId ? { ...a, status: 'Triggered' } : a
         ));
@@ -305,7 +306,7 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
           symbol: evt.symbol,
           exchange: evt.exchange || 'NSE',
           price: evt.currentPrice || 0,
-          direction: (evt.conditionType === 'equals' ? 'up' : 'up') as 'up' | 'down',
+          direction: (evt.condition?.includes('Sell') ? 'down' : 'up') as 'up' | 'down',
           condition: evt.condition || '',
           timestamp: Date.now(),
           message: evt.message,
