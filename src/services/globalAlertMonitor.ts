@@ -741,6 +741,7 @@ class GlobalAlertMonitor {
     }
 
     this._onTrigger = onTrigger;
+    this._isRunning = true;
     this._restart();
 
     this._cacheRefreshIntervalId = setInterval(() => {
@@ -796,7 +797,6 @@ class GlobalAlertMonitor {
 
     logger.debug('[GlobalAlertMonitor] Starting monitor for', symbols.length, 'symbols:', symbols);
 
-    this._isRunning = true;
     this._subscribedSymbols = new Set(symbols.map(s => this._getSymbolKey(s.symbol, s.exchange)));
 
     this._ws = subscribeToMultiTicker(symbols, (data: PriceUpdateData) => {

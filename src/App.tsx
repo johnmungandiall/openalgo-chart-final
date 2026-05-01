@@ -31,6 +31,7 @@ const CommandPalette = lazy(() => import('./components/CommandPalette/CommandPal
 const ShortcutsDialog = lazy(() => import('./components/ShortcutsDialog/ShortcutsDialog'));
 const OptionChainPicker = lazy(() => import('./components/OptionChainPicker/OptionChainPicker'));
 const OptionChainModal = lazy(() => import('./components/OptionChainModal/OptionChainModal'));
+import { isDemoMode } from './services/mockDataService';
 import { initTimeService, destroyTimeService } from './services/timeService';
 import { getJSON, setJSON, STORAGE_KEYS } from './services/storageService';
 import logger from './utils/logger';
@@ -267,7 +268,7 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
   // === GlobalAlertMonitor ===
   // Background price monitoring using SharedWebSocket
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated && !isDemoMode()) return;
 
     const handleBackgroundAlertTrigger = (evt) => {
       const msg = evt.message || `${evt.symbol} alert triggered`;
@@ -1491,7 +1492,7 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
   // Refresh global alert monitor when alerts change.
   // AlertContext already persists alerts to localStorage (tv_alerts key), so no duplicate write here.
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated || isDemoMode()) {
       globalAlertMonitor.refresh();
     }
   }, [alerts, isAuthenticated]);
@@ -1790,8 +1791,8 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
   // Note: isWorkspaceLoaded check is no longer needed here
   // AppContent only mounts after App wrapper confirms cloud sync is complete
 
-  // Show loading state while checking auth
-  if (isAuthenticated === null) {
+  // Show loading state while checking auth (skip in demo mode)
+  if (isAuthenticated === null && !isDemoMode()) {
     return (
       <div style={{
         display: 'flex',
@@ -1808,8 +1809,8 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
     );
   }
 
-  // If not authenticated, show API key dialog
-  if (isAuthenticated === false) {
+  // If not authenticated and not demo mode, show API key dialog
+  if (isAuthenticated === false && !isDemoMode()) {
     const handleApiKeySave = (newApiKey) => {
       localStorage.setItem('oa_apikey', newApiKey);
       // Also update the apiKey state so Settings dialog reflects the entered key

@@ -2925,8 +2925,8 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
             }
         };
 
-        // Only load data if authenticated
-        if (isAuthenticated === true) {
+        // Only load data if authenticated or in demo mode
+        if (isAuthenticated === true || isDemoMode()) {
             emaLastValueRef.current = null;
             loadData();
         } else {
