@@ -9,7 +9,7 @@ interface DemoSpeedControlProps {
     onSpeedChange: (speed: number) => void;
 }
 
-const SPEED_OPTIONS = [1, 2, 3, 5, 8, 10, 20, 50];
+const SPEED_OPTIONS = [1, 2, 3, 5, 8, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000];
 
 const DemoSpeedControl: React.FC<DemoSpeedControlProps> = ({ speed, onSpeedChange }) => {
     const [collapsed, setCollapsed] = useState(false);
