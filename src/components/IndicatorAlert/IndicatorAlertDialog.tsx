@@ -239,6 +239,8 @@ const IndicatorAlertDialog: FC<IndicatorAlertDialogProps> = ({
         const initialConfig: Record<string, unknown> = {};
         if (condition?.defaultValue !== undefined) {
             initialConfig.value = condition.defaultValue;
+        } else if (condition?.value !== undefined) {
+            initialConfig.value = condition.value;
         }
         if (condition?.zone) {
             initialConfig.zone = condition.zone;

@@ -2509,7 +2509,7 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
                 } else if (isDemoMode()) {
                     // Demo mode: generate mock data for testing
                     const intervalSec = intervalToSeconds(interval);
-                    data = generateMockOHLCData(500, intervalSec, 23500, 0.004);
+                    data = generateMockOHLCData(500, intervalSec, 23500, 0.008);
                     logger.debug('[DEMO] Generated', data.length, 'mock candles');
                 } else {
                     // Regular symbol mode

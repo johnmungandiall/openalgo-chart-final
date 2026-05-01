@@ -507,11 +507,11 @@ export class IndicatorDataManager {
         const latest = supertrendData[supertrendData.length - 1];
         const previous = supertrendData[supertrendData.length - 2];
         results.supertrend = {
-          supertrend: latest?.supertrend,
-          direction: latest?.direction,
+          supertrend: latest?.value,
+          direction: latest?.trend,
           previous: {
-            supertrend: previous?.supertrend,
-            direction: previous?.direction,
+            supertrend: previous?.value,
+            direction: previous?.trend,
           },
           time: latest?.time,
         };
@@ -745,13 +745,13 @@ export class IndicatorDataManager {
             const latest = stResult[stResult.length - 1];
             const prev = stResult[stResult.length - 2];
             current = {
-              supertrend: latest?.supertrend,
-              direction: latest?.direction,
+              supertrend: latest?.value,
+              direction: latest?.trend,
               time: latest?.time,
             };
             previous = {
-              supertrend: prev?.supertrend,
-              direction: prev?.direction,
+              supertrend: prev?.value,
+              direction: prev?.trend,
               time: prev?.time,
             };
           }

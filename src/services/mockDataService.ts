@@ -46,17 +46,17 @@ export function generateMockOHLCData(
     let price = basePrice;
     let trend = 1; // 1 = bullish, -1 = bearish
     let trendStrength = 0.0002;
-    let trendBarsRemaining = 30 + Math.floor(Math.random() * 50);
-    
+    let trendBarsRemaining = 15 + Math.floor(Math.random() * 25);
+
     for (let i = 0; i < count; i++) {
         const time = startTime + i * intervalSeconds;
-        
-        // Trend management - create clear trends for UT Bot to detect
+
+        // Trend management - create clear trends with reversals
         trendBarsRemaining--;
         if (trendBarsRemaining <= 0) {
             trend *= -1; // Reverse trend
-            trendStrength = 0.0001 + Math.random() * 0.0004;
-            trendBarsRemaining = 20 + Math.floor(Math.random() * 60);
+            trendStrength = 0.0003 + Math.random() * 0.0008;
+            trendBarsRemaining = 10 + Math.floor(Math.random() * 30);
         }
         
         // Price movement with trend bias
