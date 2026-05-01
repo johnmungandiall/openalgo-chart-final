@@ -181,6 +181,9 @@ class SharedWebSocketManager {
   private _authenticated: boolean = false;
   private _wsWrapper: ManagedWebSocket | null = null;
   private _wasDisconnected: boolean = false;
+  private _reconnectAttempts: number = 0;
+  private static readonly MAX_RECONNECT_DELAY = 30000;
+  private static readonly BASE_RECONNECT_DELAY = 2000;
 
   constructor() {
     // Listen for network recovery to trigger immediate reconnection
@@ -190,6 +193,7 @@ class SharedWebSocketManager {
         clearTimeout(this._reconnectTimer);
         this._reconnectTimer = null;
       }
+      this._reconnectAttempts = 0;
       if (this._subscribers.size > 0) {
         this._ensureConnected();
       }
@@ -344,6 +348,7 @@ class SharedWebSocketManager {
             'symbols'
           );
           this._authenticated = true;
+          this._reconnectAttempts = 0;
           setConnectionStatus(ConnectionState.CONNECTED);
           this._resubscribeAll();
 
@@ -387,12 +392,19 @@ class SharedWebSocketManager {
       this._wasDisconnected = true;
       setConnectionStatus(ConnectionState.DISCONNECTED);
       if (this._subscribers.size > 0) {
-        this._reconnectTimer = setTimeout(() => this._ensureConnected(), 2000);
+        const delay = Math.min(
+          SharedWebSocketManager.BASE_RECONNECT_DELAY * Math.pow(2, this._reconnectAttempts),
+          SharedWebSocketManager.MAX_RECONNECT_DELAY
+        );
+        this._reconnectAttempts++;
+        logger.debug(`[SharedWS] Reconnecting in ${delay}ms (attempt ${this._reconnectAttempts})`);
+        this._reconnectTimer = setTimeout(() => this._ensureConnected(), delay);
       }
     };
 
-    this._ws.onerror = (err: Event) => {
-      logger.error('[SharedWS] Error:', err);
+    this._ws.onerror = () => {
+      // Logged at debug level to avoid console spam during reconnection
+      logger.debug('[SharedWS] Connection error');
     };
   }
 
