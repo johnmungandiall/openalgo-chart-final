@@ -89,11 +89,13 @@ export class AlertEvaluator {
             const prevLine2 = series2 && previousIndicator ? previousIndicator[series2] as number : undefined;
             const numValue = value as number;
             const numThreshold = comparison ? currentIndicator[comparison] as number : undefined;
+            const prevThreshold = comparison && previousIndicator
+                ? previousIndicator[comparison] as number : numThreshold;
 
             switch (type) {
                 case ALERT_CONDITION_TYPES.CROSSES_ABOVE:
                     if (requiresPrice && comparison) {
-                        return this.checkCrossAbove(currentPrice, previousPrice, numThreshold);
+                        return this.checkCrossAbove(currentPrice, previousPrice, prevThreshold);
                     } else if (comparison) {
                         return this.checkCrossAbove(curVal, prevVal, numThreshold);
                     } else {
@@ -102,7 +104,7 @@ export class AlertEvaluator {
 
                 case ALERT_CONDITION_TYPES.CROSSES_BELOW:
                     if (requiresPrice && comparison) {
-                        return this.checkCrossBelow(currentPrice, previousPrice, numThreshold);
+                        return this.checkCrossBelow(currentPrice, previousPrice, prevThreshold);
                     } else if (comparison) {
                         return this.checkCrossBelow(curVal, prevVal, numThreshold);
                     } else {

@@ -514,8 +514,12 @@ class GlobalAlertMonitor {
             ohlcData
           );
 
-          // Use indicatorData.previous as fallback for first tick evaluation
-          const previousData = this._previousIndicatorValues.get(cacheKey) || (indicatorData ? indicatorData.previous : undefined);
+          // Always use indicatorData.previous (second-to-last bar from calculation)
+          // for state-change detection. The cached _previousIndicatorValues is unreliable
+          // because the indicator is recalculated from the full OHLC array each tick —
+          // when a new candle flips direction, both current and cached previous reflect
+          // the same recalculated state, missing the transition.
+          const previousData = indicatorData?.previous || this._previousIndicatorValues.get(cacheKey);
 
           if (indicatorData && indicatorData.current) {
             const previousPrice = this._lastPrices.get(key);
