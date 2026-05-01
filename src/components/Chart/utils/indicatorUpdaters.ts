@@ -144,7 +144,7 @@ export const updateATRSeries = (series: any, ind: IndicatorConfig, data: OHLCDat
  */
 export const updateSupertrendSeries = (series: any, ind: IndicatorConfig, data: OHLCData[], isVisible: boolean): void => {
     series.applyOptions({ visible: isVisible });
-    const val = calculateSupertrend(data, ind.period || 10, ind.multiplier || 3);
+    const val = calculateSupertrend(data, ind.period || 300, ind.multiplier || 0.5);
     if (val) {
         const colored = val.map((d: any) => ({
             ...d,

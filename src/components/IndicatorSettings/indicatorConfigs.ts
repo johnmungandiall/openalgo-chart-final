@@ -144,8 +144,8 @@ export const indicatorConfigs: Record<string, IndicatorConfigDefinition> = {
         fullName: 'Supertrend',
         pane: 'main',
         inputs: [
-            { key: 'period', label: 'ATR Length', type: 'number', min: 1, max: 100, default: 10 },
-            { key: 'multiplier', label: 'Factor', type: 'number', min: 0.5, max: 10, step: 0.5, default: 3 },
+            { key: 'period', label: 'ATR Length', type: 'number', min: 1, max: 500, default: 300 },
+            { key: 'multiplier', label: 'Factor', type: 'number', min: 0.1, max: 10, step: 0.1, default: 0.5 },
         ],
         style: [
             { key: 'upColor', label: 'Up Trend', type: 'color', default: '#089981' },

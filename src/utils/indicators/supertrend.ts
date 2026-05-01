@@ -17,8 +17,8 @@ import { OHLCData, SupertrendPoint } from './types';
  */
 export function calculateSupertrend(
   data: OHLCData[],
-  period: number = 10,
-  multiplier: number = 3
+  period: number = 300,
+  multiplier: number = 0.5
 ): SupertrendPoint[] {
   if (!data || data.length < period + 1) {
     return [];

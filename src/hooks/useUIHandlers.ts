@@ -385,7 +385,7 @@ export const useUIHandlers = ({
             dColor: '#FF6D00',
           },
           vwap: { enabled: false, color: '#FF9800' },
-          supertrend: { enabled: false, period: 10, multiplier: 3 },
+          supertrend: { enabled: false, period: 300, multiplier: 0.5 },
           tpo: { enabled: false, blockSize: '30m', tickSize: 'auto' },
           firstCandle: {
             enabled: false,

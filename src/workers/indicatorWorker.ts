@@ -410,7 +410,7 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
                 break;
 
             case 'supertrend':
-                result = calculateSupertrend(data, options?.period || 10, options?.multiplier || 3);
+                result = calculateSupertrend(data, options?.period || 300, options?.multiplier || 0.5);
                 break;
 
             case 'vwap':

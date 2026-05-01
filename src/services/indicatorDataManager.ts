@@ -500,8 +500,8 @@ export class IndicatorDataManager {
     if (indicators.supertrend?.enabled) {
       const supertrendData = calculateSupertrend(
         ohlcData,
-        indicators.supertrend.period || 10,
-        indicators.supertrend.multiplier || 3
+        indicators.supertrend.period || 300,
+        indicators.supertrend.multiplier || 0.5
       ) as any | null;
       if (supertrendData && supertrendData.length >= 2) {
         const latest = supertrendData[supertrendData.length - 1];
@@ -737,8 +737,8 @@ export class IndicatorDataManager {
 
         case 'supertrend': {
           workerResult = await this.runWorkerTask('supertrend', slicedData, {
-            period: 10,
-            multiplier: 3,
+            period: 300,
+            multiplier: 0.5,
           });
           const stResult = workerResult as any | null;
           if (stResult && stResult.length >= 2) {

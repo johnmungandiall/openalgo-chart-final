@@ -3070,7 +3070,7 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
                         break;
                     }
                     case 'supertrend': {
-                        const { period = 10, multiplier = 3, upColor, downColor } = ind;
+                        const { period = 300, multiplier = 0.5, upColor, downColor } = ind;
                         const val = calculateSupertrend(data, period, multiplier);
                         const colored = val.map(d => ({ ...d, color: d.trend === 1 ? (upColor || '#089981') : (downColor || '#F23645') }));
                         if (colored && colored.length > 0) series.setData(colored);
