@@ -42,6 +42,7 @@ import { TPOProfilePrimitive } from '../../plugins/tpo-profile/TPOProfilePrimiti
 import { intervalToSeconds } from '../../utils/timeframes';
 import { logger } from '../../utils/logger.js';
 import { isDemoMode, generateMockOHLCData, simulateMockTicker } from '../../services/mockDataService';
+import { globalAlertMonitor } from '../../services/globalAlertMonitor';
 import DemoSpeedControl from './DemoSpeedControl';
 
 import { LineToolManager } from '../../plugins/line-tools/line-tool-manager';
@@ -2420,6 +2421,40 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
         let indicatorFrame = null;
         const abortController = new AbortController();
 
+        // Clean up existing indicator series when data reloads (symbol/interval change).
+        // Without this, stale series from a previous load remain in the map and
+        // setData() targets orphaned series that no longer match the chart's time axis.
+        if (indicatorSeriesMap.current.size > 0) {
+            indicatorSeriesMap.current.forEach((series, id) => {
+                try {
+                    if (series && chartRef.current) {
+                        if (series.macd || series.signal || series.histogram) {
+                            if (series.macd) chartRef.current.removeSeries(series.macd);
+                            if (series.signal) chartRef.current.removeSeries(series.signal);
+                            if (series.histogram) chartRef.current.removeSeries(series.histogram);
+                        } else if (series.k || series.d) {
+                            if (series.k) chartRef.current.removeSeries(series.k);
+                            if (series.d) chartRef.current.removeSeries(series.d);
+                        } else if (series.upper || series.middle || series.lower) {
+                            if (series.upper) chartRef.current.removeSeries(series.upper);
+                            if (series.middle) chartRef.current.removeSeries(series.middle);
+                            if (series.lower) chartRef.current.removeSeries(series.lower);
+                        } else if (series.bars) {
+                            chartRef.current.removeSeries(series.bars);
+                        } else if (series.prediction) {
+                            chartRef.current.removeSeries(series.prediction);
+                        } else if (typeof series.setData === 'function') {
+                            chartRef.current.removeSeries(series);
+                        }
+                    }
+                } catch (e) {
+                    // Series may already be removed
+                }
+            });
+            indicatorSeriesMap.current.clear();
+            indicatorPanesMap.current.clear();
+        }
+
         if (wsRef.current) {
             wsRef.current.close();
             wsRef.current = null;
@@ -2707,6 +2742,14 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
                                 if (onOHLCDataUpdateRef.current && symbol && interval && currentData.length > 0) {
                                     onOHLCDataUpdateRef.current(symbol, exchange, interval, currentData);
                                 }
+
+                                // Push demo tick price into globalAlertMonitor so indicator alerts evaluate in demo mode
+                                globalAlertMonitor.pushPriceUpdate({
+                                    symbol: symbol,
+                                    exchange: exchange,
+                                    last: closePrice,
+                                    timestamp: Date.now()
+                                });
 
                                 if (mainSeriesRef.current && !isReplayModeRef.current) {
                                     try {
@@ -3763,9 +3806,6 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
 
     // Separate effect for indicators to prevent data reload
     useEffect(() => {
-        logger.debug('[DEBUG] Indicators effect TRIGGERED. Count:', indicators?.length);
-        logger.debug('[DEBUG] Indicator IDs:', indicators?.map(i => i.id));
-
         if (dataRef.current.length > 0) {
             // Update indicators with current data
             try {

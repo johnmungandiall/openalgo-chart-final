@@ -336,7 +336,7 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
       clearTimeout(timer);
       globalAlertMonitor.stop();
     };
-  }, [showToast]); // Removed isAuthenticated dependency - monitor always runs
+  }, [showToast, isAuthenticated]); // isAuthenticated required so monitor starts after auth completes
 
   // Handler to share OHLC data with GlobalAlertMonitor for indicator alerts
   const handleOHLCDataUpdate = useCallback((symbol, exchange, interval, ohlcData) => {
@@ -1488,27 +1488,11 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchlistSymbolsKey, watchlistsState.activeListId, isAuthenticated, handleRemoveFromWatchlist]);
 
-  // Persist alerts/logs to localStorage with 24h retention
+  // Refresh global alert monitor when alerts change.
+  // AlertContext already persists alerts to localStorage (tv_alerts key), so no duplicate write here.
   useEffect(() => {
-    const cutoff = Date.now() - ALERT_RETENTION_MS;
-    const filtered = alerts.filter((a: any) => {
-      const ts = a && a.created_at ? new Date(a.created_at as string | number).getTime() : NaN;
-      return Number.isFinite(ts) && ts >= cutoff;
-    });
-
-    if (filtered.length !== alerts.length) {
-      setAlerts(filtered as any);
-      return; // avoid persisting stale data in this pass
-    }
-
-    try {
-      localStorage.setItem('tv_alerts', JSON.stringify(filtered));
-      // Refresh global alert monitor when alerts change (after localStorage is updated)
-      if (isAuthenticated) {
-        globalAlertMonitor.refresh();
-      }
-    } catch (error) {
-      console.error('Failed to persist alerts:', error);
+    if (isAuthenticated) {
+      globalAlertMonitor.refresh();
     }
   }, [alerts, isAuthenticated]);
 

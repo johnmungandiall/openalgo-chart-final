@@ -356,6 +356,20 @@ export const useCloudWorkspaceSync = (
         // Only trigger if the values actually changed (using shallow comparison)
         if (!shallow(newState, prevState)) {
           logger.debug('[CloudSync] Store change detected');
+          // Mirror workspace state to tv_saved_layout so cloud sync picks it up.
+          // Zustand persist writes to 'openalgo-workspace-storage', but cloud sync
+          // reads/writes 'tv_saved_layout'. Without this, indicators and other chart
+          // config changes are never synced to the cloud and get lost on reload.
+          try {
+            const layoutData = JSON.stringify({
+              layout: newState.layout,
+              activeChartId: newState.activeChartId,
+              charts: newState.charts,
+            });
+            set(STORAGE_KEYS.SAVED_LAYOUT, layoutData);
+          } catch (e) {
+            logger.error('[CloudSync] Error mirroring store to tv_saved_layout:', e);
+          }
           scheduleSave();
         }
       },
