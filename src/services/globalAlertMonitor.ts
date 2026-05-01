@@ -117,6 +117,9 @@ class GlobalAlertMonitor {
   /** WebSocket connection */
   private _ws: WebSocketConnection | null;
 
+  /** Currently subscribed symbols (symbol:exchange keys) */
+  private _subscribedSymbols: Set<string>;
+
   /** Callback for trigger events */
   private _onTrigger: AlertCallback | null;
 
@@ -163,6 +166,7 @@ class GlobalAlertMonitor {
     this._lastPrices = new Map();
     this._alertPositions = new Map();
     this._ws = null;
+    this._subscribedSymbols = new Set();
     this._onTrigger = null;
     this._isRunning = false;
     this._indicatorDataManager = new IndicatorDataManager();
@@ -749,16 +753,29 @@ class GlobalAlertMonitor {
   }
 
   /**
-   * Restart WebSocket with current alerts
+   * Restart WebSocket with current alerts.
+   * Does NOT call stop() — preserves all caches and interval timers.
    */
   private _restart(): void {
-    this.stop();
+    // Only close the existing WebSocket, leave everything else intact
+    if (this._ws) {
+      try {
+        if (typeof this._ws.close === 'function') {
+          this._ws.close();
+        }
+      } catch (error) {
+        logger.debug('[GlobalAlertMonitor] Error closing WebSocket during restart:', error);
+      }
+      this._ws = null;
+    }
+
     this._refreshAlertCache();
 
     const alerts = this._cachedAlerts;
     logger.debug('[GlobalAlertMonitor] Loaded alerts for monitoring:', alerts);
     if (alerts.length === 0) {
       logger.debug('[GlobalAlertMonitor] No alerts to monitor');
+      this._subscribedSymbols = new Set();
       return;
     }
 
@@ -772,11 +789,15 @@ class GlobalAlertMonitor {
 
     const symbols = Array.from(symbolsMap.values());
 
-    if (symbols.length === 0) return;
+    if (symbols.length === 0) {
+      this._subscribedSymbols = new Set();
+      return;
+    }
 
     logger.debug('[GlobalAlertMonitor] Starting monitor for', symbols.length, 'symbols:', symbols);
 
     this._isRunning = true;
+    this._subscribedSymbols = new Set(symbols.map(s => this._getSymbolKey(s.symbol, s.exchange)));
 
     this._ws = subscribeToMultiTicker(symbols, (data: PriceUpdateData) => {
       this._onPriceUpdate(data).catch((err: Error) => {
@@ -820,14 +841,47 @@ class GlobalAlertMonitor {
   }
 
   /**
-   * Refresh the monitor (call when alerts change)
+   * Refresh the monitor (call when alerts change).
+   * Preserves all caches, previous indicator values, and interval timers.
+   * Only reconnects the WebSocket if the subscribed symbol set has changed.
    */
   refresh(): void {
     this._refreshAlertCache();
 
-    if (this._onTrigger) {
-      this._restart();
+    if (!this._onTrigger) return;
+
+    // Build the new symbol set from the refreshed alert cache
+    const newSymbolsMap = new Map<string, { symbol: string; exchange: string }>();
+    for (const alert of this._cachedAlerts) {
+      const key = this._getSymbolKey(alert.symbol, alert.exchange || 'NSE');
+      if (!newSymbolsMap.has(key)) {
+        newSymbolsMap.set(key, { symbol: alert.symbol, exchange: alert.exchange || 'NSE' });
+      }
     }
+    const newSymbolKeys = new Set(newSymbolsMap.keys());
+
+    // Check whether the subscribed symbol set has changed
+    const symbolsChanged =
+      newSymbolKeys.size !== this._subscribedSymbols.size ||
+      [...newSymbolKeys].some(k => !this._subscribedSymbols.has(k));
+
+    if (symbolsChanged) {
+      logger.debug('[GlobalAlertMonitor] Symbol set changed, reconnecting WebSocket');
+      this._restart();
+    } else {
+      logger.debug('[GlobalAlertMonitor] Symbol set unchanged, skipping WebSocket reconnect');
+    }
+  }
+
+  /**
+   * Push a price update directly into the monitor.
+   * Used by demo mode to route mock tick data through the alert evaluation pipeline.
+   */
+  pushPriceUpdate(data: { symbol: string; exchange?: string; last: number; timestamp?: number }): void {
+    if (!this._isRunning) return;
+    this._onPriceUpdate(data as PriceUpdateData).catch(err => {
+      logger.error('[GlobalAlertMonitor] Error in manual price update:', err);
+    });
   }
 
   /**
