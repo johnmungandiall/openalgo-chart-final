@@ -44,7 +44,10 @@
       "Bash(npm run test:*)",
       "Bash(npm run test:coverage:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "PowerShell(Get-ExecutionPolicy -List)",
+      "PowerShell(npm.cmd run build)",
+      "PowerShell(npm.cmd install)"
     ]
   }
 }
