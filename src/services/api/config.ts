@@ -6,7 +6,7 @@
 import { getString, STORAGE_KEYS } from '../storageService';
 import logger from '@/utils/logger';
 
-const DEFAULT_HOST = 'http://127.0.0.1:5000';
+const DEFAULT_HOST = 'http://127.0.0.1:5001';
 const DEFAULT_WS_HOST = '127.0.0.1:8765';
 
 /**
@@ -21,11 +21,11 @@ export const getHostUrl = (): string => {
  * This avoids CORS issues during development
  */
 export const shouldUseProxy = (): boolean => {
-  const hostUrl = getHostUrl();
+  const hostUrl = getHostUrl().trim().replace(/\/+$/, '');
   const isDefaultHost =
     hostUrl === DEFAULT_HOST ||
-    hostUrl === 'http://localhost:5000' ||
-    hostUrl === 'http://127.0.0.1:5000';
+    hostUrl === 'http://localhost:5001' ||
+    hostUrl === 'http://127.0.0.1:5001';
   const isLocalDev =
     typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' ||

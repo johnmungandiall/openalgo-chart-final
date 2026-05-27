@@ -363,8 +363,8 @@ export async function processAlertWebhook(
         let targetUrl = webhookSettings.url;
 
         // Transform localhost URLs to go through the Vite proxy
-        // e.g., http://127.0.0.1:5000/api/v1/placesmartorder -> /api/v1/placesmartorder
-        if (targetUrl.includes('127.0.0.1:5000') || targetUrl.includes('localhost:5000')) {
+        // e.g., http://127.0.0.1:5001/api/v1/placesmartorder -> /api/v1/placesmartorder
+        if (targetUrl.includes('127.0.0.1:5001') || targetUrl.includes('localhost:5001')) {
             try {
                 const urlObj = new URL(targetUrl);
                 targetUrl = urlObj.pathname; // e.g., /api/v1/placesmartorder

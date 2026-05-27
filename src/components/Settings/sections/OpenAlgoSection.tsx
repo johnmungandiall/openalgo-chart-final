@@ -40,11 +40,11 @@ const OpenAlgoSection: React.FC<OpenAlgoSectionProps> = ({
                     type="text"
                     value={localHostUrl}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setLocalHostUrl(e.target.value)}
-                    placeholder="http://127.0.0.1:5000"
+                    placeholder="http://127.0.0.1:5001"
                     className={styles.input}
                 />
                 <p className={styles.inputHint}>
-                    Default: http://127.0.0.1:5000. Change to use a custom OpenAlgo server URL.
+                    Default: http://127.0.0.1:5001. Change to use a custom OpenAlgo server URL.
                 </p>
             </div>
 

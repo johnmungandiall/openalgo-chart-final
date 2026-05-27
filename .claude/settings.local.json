@@ -44,7 +44,12 @@
       "Bash(npm run test:*)",
       "Bash(npm run test:coverage:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "PowerShell(Get-NetTCPConnection -State Listen -LocalPort 5000,5001,8765,4173 -ErrorAction SilentlyContinue | Select-Object LocalAddress,LocalPort,@{N='PID';E={$_.OwningProcess}},@{N='Process';E={\\(Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue\\).ProcessName}} | Sort-Object LocalPort | Format-Table -AutoSize)",
+      "PowerShell(npm.cmd run build)",
+      "PowerShell(Stop-Process -Id 7308 -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(\"stopped old preview\")",
+      "PowerShell(npm.cmd run preview)"
     ]
   }
 }

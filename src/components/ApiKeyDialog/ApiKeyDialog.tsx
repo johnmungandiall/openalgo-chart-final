@@ -4,7 +4,15 @@ import { Eye, EyeOff } from 'lucide-react';
 import { BaseModal, BaseButton } from '../shared';
 import { get, set } from '../../services/storageService';
 
-const DEFAULT_HOST = 'http://127.0.0.1:5000';
+const DEFAULT_HOST = 'http://127.0.0.1:5001';
+
+// Localhost backends are reached through the Vite proxy (relative path) so the
+// request stays same-origin and dodges the backend's CORS policy. Keep this list
+// in sync with the proxy target in vite.config.ts.
+const PROXIED_HOSTS = [
+    'http://127.0.0.1:5001',
+    'http://localhost:5001',
+];
 
 export interface ApiKeyDialogProps {
     onSave: (apiKey: string) => void;
@@ -35,9 +43,8 @@ const ApiKeyDialog: React.FC<ApiKeyDialogProps> = ({ onSave, onClose }) => {
             set('oa_host_url', hostUrl);
 
             // For local development, use relative path to leverage Vite proxy
-            const isLocalhost = hostUrl === DEFAULT_HOST ||
-                hostUrl === 'http://localhost:5000' ||
-                hostUrl === 'http://127.0.0.1:5000';
+            const normalizedHost = hostUrl.trim().replace(/\/+$/, '');
+            const isLocalhost = PROXIED_HOSTS.includes(normalizedHost);
             const apiUrl = isLocalhost
                 ? `/api/v1/chart?apikey=${encodeURIComponent(apiKey.trim())}`
                 : `${hostUrl}/api/v1/chart?apikey=${encodeURIComponent(apiKey.trim())}`;
@@ -137,12 +144,12 @@ const ApiKeyDialog: React.FC<ApiKeyDialogProps> = ({ onSave, onClose }) => {
                         type="text"
                         value={hostUrl}
                         onChange={(e: ChangeEvent<HTMLInputElement>) => setHostUrl(e.target.value)}
-                        placeholder="http://127.0.0.1:5000"
+                        placeholder="http://127.0.0.1:5001"
                         style={inputStyle}
                         className="focusable-input"
                     />
                     <p style={hintStyle}>
-                        Default: http://127.0.0.1:5000
+                        Default: http://127.0.0.1:5001
                     </p>
                 </div>
 

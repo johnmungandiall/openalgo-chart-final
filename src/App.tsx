@@ -880,9 +880,9 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
   });
   const [hostUrl, setHostUrl] = useState(() => {
     try {
-      return localStorage.getItem('oa_host_url') || 'http://127.0.0.1:5000';
+      return localStorage.getItem('oa_host_url') || 'http://127.0.0.1:5001';
     } catch {
-      return 'http://127.0.0.1:5000';
+      return 'http://127.0.0.1:5001';
     }
   });
   const [openalgoUsername, setOpenalgoUsername] = useState(() => {
