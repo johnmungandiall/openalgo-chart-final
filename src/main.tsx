@@ -15,6 +15,23 @@ import { WatchlistProvider } from './context/WatchlistContext';
 const savedTheme = localStorage.getItem('tv_theme') || 'dark';
 document.documentElement.setAttribute('data-theme', savedTheme);
 
+// --- Quantonomous Router connection (force, no connect prompt) ---
+// The Quantonomous Engine hosts an OpenAlgo-compatible gateway: REST on 1100,
+// WS on 1200 (same wire contract — see OPENALGO-API-CONTRACT.md). Seeding these
+// before React mounts means the API-key dialog never appears and the chart
+// connects directly to the router instead of OpenAlgo on :5001 / :8765.
+// Host + WS are forced on every load so a stale :5001 value can't win.
+localStorage.setItem('oa_host_url', 'http://127.0.0.1:1100');
+localStorage.setItem('oa_ws_url', 'ws://127.0.0.1:1200');
+// API key is NOT clobbered: keep an existing real key (REST/candles need it),
+// otherwise seed a placeholder so the dialog stays hidden. Replace the
+// placeholder with your real OpenAlgo key (http://127.0.0.1:5001/apikey) for
+// history/candles. Never commit a real key. WS ticks work with any key.
+if (!localStorage.getItem('oa_apikey')) {
+  localStorage.setItem('oa_apikey', 'YOUR_OPENALGO_API_KEY');
+}
+// -----------------------------------------------------------------
+
 // Suppress known browser extension errors that pollute the console
 window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
   // Chrome Extension Messaging API error
