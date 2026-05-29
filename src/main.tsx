@@ -30,7 +30,14 @@ localStorage.setItem('oa_ws_url', 'ws://127.0.0.1:1200');
 // and none is already saved, oa_apikey stays empty so the connect dialog appears
 // and the user can enter their key once (it then persists in localStorage).
 const OLD_PLACEHOLDER_KEY = 'YOUR_OPENALGO_API_KEY';
-const seededApiKey = import.meta.env.VITE_OPENALGO_API_KEY;
+// Only seed the key in dev (npm run dev) for local convenience. Production
+// builds (the packaged .exe) deliberately ignore VITE_OPENALGO_API_KEY so a
+// real broker key can never be baked into a distributed binary — each user
+// enters their own key once via the connect dialog. Router host/WS are still
+// seeded above, so the app ships pre-pointed at the Quantonomous Router.
+const seededApiKey = import.meta.env.DEV
+  ? import.meta.env.VITE_OPENALGO_API_KEY
+  : undefined;
 if (seededApiKey) {
   localStorage.setItem('oa_apikey', seededApiKey);
 } else if (localStorage.getItem('oa_apikey') === OLD_PLACEHOLDER_KEY) {
