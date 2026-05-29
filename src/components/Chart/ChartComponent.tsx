@@ -1820,7 +1820,9 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
             layout: {
                 textColor: textColor,
                 background: { color: backgroundColor },
-                attributionLogo: false,
+                // Required by the lightweight-charts (Apache-2.0) license: display
+                // a link to tradingview.com. See NOTICE. Do not set this to false.
+                attributionLogo: true,
             },
             grid: {
                 vertLines: {

@@ -1,0 +1,21 @@
+OpenAlgo Chart
+Third-party attribution notices
+
+================================================================================
+TradingView Lightweight Charts™
+================================================================================
+
+This product includes the Lightweight Charts™ library, licensed under the
+Apache License, Version 2.0.
+
+TradingView Lightweight Charts™
+Copyright (с) 2025 TradingView, Inc. https://www.tradingview.com/
+
+Per the library's license terms, this application displays the required
+attribution link to https://www.tradingview.com/ on the chart itself via the
+`attributionLogo` layout option (see src/components/Chart/ChartComponent.tsx).
+Do not disable it.
+
+A copy of the Apache License 2.0 is available at:
+https://www.apache.org/licenses/LICENSE-2.0
+and in node_modules/lightweight-charts/LICENSE.
