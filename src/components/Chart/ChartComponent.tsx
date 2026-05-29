@@ -49,7 +49,6 @@ import { LineToolManager } from '../../plugins/line-tools/line-tool-manager';
 import { PriceScaleTimer } from '../../plugins/line-tools/tools/price-scale-timer';
 import '../../plugins/line-tools/floating-toolbar.css';
 import ReplayControls from '../Replay/ReplayControls';
-import { pineScriptService } from '../../services/pineScriptService';
 import ReplaySlider from '../Replay/ReplaySlider';
 import PriceScaleMenu from './PriceScaleMenu';
 import PriceScaleContextMenu, { SCALE_MODES } from './PriceScaleContextMenu';
@@ -3817,65 +3816,6 @@ const ChartComponent = forwardRef<any, ChartComponentProps>(({
             }
         }
     }, [indicators, updateIndicators]);
-
-    // Track Pine indicator input hashes to detect changes
-    const pineInputHashRef = useRef<Record<string, string>>({});
-
-    // Execute Pine Script when Pine indicators are added or inputs change
-    useEffect(() => {
-        if (!indicators || dataRef.current.length === 0) return;
-
-        const pineIndicators = indicators.filter((ind: any) => ind.type === 'pine' && ind.pineCode);
-
-        pineIndicators.forEach(async (ind: any) => {
-            // Create hash of current input values to detect changes
-            const inputHash = JSON.stringify(
-                (ind.pineInputs || []).map((input: any) => ind[input.name])
-            );
-
-            // Skip if already executed with same inputs
-            if (pineInputHashRef.current[ind.id] === inputHash && ind.pineResultData) {
-                return;
-            }
-
-            try {
-                logger.debug('[Pine] Executing Pine Script for:', ind.id, 'with inputs:', inputHash);
-
-                // Build input values from indicator settings
-                const inputValues: Record<string, unknown> = {};
-                (ind.pineInputs || []).forEach((input: any) => {
-                    inputValues[input.name] = ind[input.name] ?? input.default;
-                });
-
-                // Execute Pine Script
-                const result = await pineScriptService.execute(
-                    ind.pineCode,
-                    dataRef.current,
-                    inputValues
-                );
-
-                if (result.errors.length === 0 && result.plots.size > 0) {
-                    // Get the first plot's data
-                    const firstPlot = result.plots.values().next().value;
-                    if (firstPlot && firstPlot.data) {
-                        // Update the indicator with the result data
-                        if (onIndicatorSettings) {
-                            onIndicatorSettings(ind.id, {
-                                pineResultData: firstPlot.data,
-                                pineResultColor: firstPlot.config?.color
-                            });
-                        }
-                        pineInputHashRef.current[ind.id] = inputHash;
-                        logger.debug('[Pine] Execution successful, data points:', firstPlot.data.length);
-                    }
-                } else if (result.errors.length > 0) {
-                    logger.warn('[Pine] Execution errors:', result.errors);
-                }
-            } catch (error) {
-                logger.error('[Pine] Execution failed:', error);
-            }
-        });
-    }, [indicators, onIndicatorSettings]);
 
     // Handle Magnet Mode
     useEffect(() => {

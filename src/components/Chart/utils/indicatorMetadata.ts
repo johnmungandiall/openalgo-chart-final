@@ -227,15 +227,6 @@ export const INDICATOR_REGISTRY: Record<string, IndicatorMetadata> = {
     hasMarkers: true,
     description: 'Price Action Range Strategy'
   },
-
-  // ==================== PINE SCRIPT ====================
-  pine: {
-    cleanupType: INDICATOR_CLEANUP_TYPES.SIMPLE_SERIES,
-    pane: 'dynamic', // Can be 'main' or separate pane depending on indicator
-    hasPane: true,   // May have separate pane for non-overlay indicators
-    hasPriceLines: false,
-    description: 'Pine Script Custom Indicator'
-  }
 };
 
 /**

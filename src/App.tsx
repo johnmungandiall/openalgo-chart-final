@@ -74,7 +74,6 @@ const ANNScanner = lazy(() => import('./components/ANNScanner/ANNScanner'));
 const ChartTemplatesDialog = lazy(() => import('./components/ChartTemplates/ChartTemplatesDialog'));
 const ShortcutsSettings = lazy(() => import('./components/ShortcutsSettings/ShortcutsSettings'));
 const IndicatorSettingsDialog = lazy(() => import('./components/IndicatorSettings/IndicatorSettingsDialog'));
-const PineScriptEditor = lazy(() => import('./components/PineEditor/PineScriptEditor'));
 import {
   VALID_INTERVAL_UNITS,
   DEFAULT_FAVORITE_INTERVALS,
@@ -478,52 +477,6 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
     if (isAccountPanelMaximized) setIsAccountPanelMaximized(false);
   }, [isAccountPanelMaximized]);
 
-  // Pine Script Editor State
-  const [showPineEditor, setShowPineEditor] = useState(false);
-  const [pineIndicatorCounter, setPineIndicatorCounter] = useState(1);
-
-  // Handler for adding Pine Script indicator to chart
-  const handleAddPineIndicator = useCallback((code: string, inputs: any[]) => {
-    const indicatorName = (() => {
-      // Extract indicator name from code
-      const match = code.match(/indicator\s*\(\s*["']([^"']+)["']/);
-      return match ? match[1] : `Pine Script ${pineIndicatorCounter}`;
-    })();
-
-    // Create default settings from inputs
-    const defaultSettings: Record<string, unknown> = {};
-    inputs.forEach((input: any) => {
-      defaultSettings[input.name] = input.default;
-    });
-
-    // Check if it's an overlay indicator
-    const isOverlay = /overlay\s*=\s*true/.test(code);
-
-    setCharts((prev: any[]) =>
-      prev.map((chart: any) => {
-        if (chart.id !== activeChartId) return chart;
-
-        const newIndicator = {
-          id: `pine_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          type: 'pine',
-          name: indicatorName,
-          visible: true,
-          pineCode: code,
-          pineInputs: inputs,
-          pane: isOverlay ? 'main' : 'pine_indicator',
-          ...defaultSettings,
-        };
-
-        return {
-          ...chart,
-          indicators: [...(chart.indicators || []), newIndicator],
-        };
-      })
-    );
-
-    setPineIndicatorCounter((c: number) => c + 1);
-    showToast(`Added "${indicatorName}" to chart`, 'success');
-  }, [activeChartId, pineIndicatorCounter, setCharts, showToast]);
 
   const handleAccountPanelMaximize = useCallback(() => {
     setIsAccountPanelMaximized(prev => !prev);
@@ -1922,8 +1875,6 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
             }}
             onOptionsClick={() => setIsOptionChainOpen(true)}
             onHeatmapClick={() => setIsSectorHeatmapOpen(true)}
-            onPineEditorClick={() => setShowPineEditor(prev => !prev)}
-            isPineEditorOpen={showPineEditor}
           />
         }
         leftToolbar={
@@ -2390,29 +2341,6 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
               setEditingIndicator(null);
             }}
             theme={theme}
-            // For Pine indicators, generate dynamic config from pineInputs
-            dynamicConfig={editingIndicator.type === 'pine' && editingIndicator.pineInputs ? {
-              name: editingIndicator.name || 'Pine Script',
-              fullName: editingIndicator.name || 'Pine Script Indicator',
-              pane: editingIndicator.pane || 'pine_indicator',
-              inputs: (editingIndicator.pineInputs || []).map((input: any) => ({
-                key: input.name,
-                label: input.title || input.name,
-                type: input.type === 'int' || input.type === 'float' ? 'number' :
-                      input.type === 'bool' ? 'boolean' :
-                      input.type === 'color' ? 'color' :
-                      input.type === 'string' || input.type === 'source' ? 'select' : 'text',
-                default: input.default,
-                min: input.minval,
-                max: input.maxval,
-                step: input.step || (input.type === 'float' ? 0.1 : 1),
-                options: input.options || (input.type === 'source' ? ['close', 'open', 'high', 'low', 'hl2', 'hlc3', 'ohlc4'] : undefined),
-              })),
-              style: [
-                { key: 'pineColor', label: 'Line Color', type: 'color', default: '#2962FF' },
-                { key: 'pineLineWidth', label: 'Line Width', type: 'number', min: 1, max: 5, default: 2 },
-              ],
-            } : undefined}
           />
         )}
       </Suspense>
@@ -2508,16 +2436,6 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
         danger={confirmDialogState.danger}
       />
 
-      {/* Pine Script Editor - Bottom Panel */}
-      <Suspense fallback={null}>
-        {showPineEditor && (
-          <PineScriptEditor
-            isOpen={showPineEditor}
-            onClose={() => setShowPineEditor(false)}
-            onAddToChart={handleAddPineIndicator}
-          />
-        )}
-      </Suspense>
     </OrderProvider >
   );
 }

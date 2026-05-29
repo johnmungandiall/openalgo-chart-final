@@ -85,8 +85,6 @@ export interface TopbarProps {
     onOptionsClick?: () => void;
     onHeatmapClick?: () => void;
     onAddIndicator?: (indicator: string) => void;
-    onPineEditorClick?: () => void;
-    isPineEditorOpen?: boolean;
 }
 
 const Topbar: React.FC<TopbarProps> = ({
@@ -99,8 +97,7 @@ const Topbar: React.FC<TopbarProps> = ({
     layout, onLayoutChange, onSaveLayout, onAlertClick, onIndicatorAlertClick, onCompareClick, onReplayClick,
     isReplayMode = false, onSettingsClick, onTemplatesClick, onChartTemplatesClick,
     onStraddleClick, strategyConfig = null,
-    onOptionsClick, onHeatmapClick, onAddIndicator,
-    onPineEditorClick, isPineEditorOpen = false
+    onOptionsClick, onHeatmapClick, onAddIndicator
 }) => {
 
     const [showIndicators, setShowIndicators] = useState(false);
@@ -728,22 +725,6 @@ const Topbar: React.FC<TopbarProps> = ({
                                                         </div>
                                                     )}
                                                 </div>
-                                                {/* Pine Script Editor */}
-                                                <Tooltip content="Pine Script Editor" position="bottom">
-                                                    <button
-                                                        className={classNames(styles.button, { [styles.isActive]: isPineEditorOpen })}
-                                                        aria-label="Pine Script Editor"
-                                                        onClick={onPineEditorClick}
-                                                    >
-                                                        <div className={styles.icon}>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" width="28" height="28" fill="none">
-                                                                <path stroke="currentColor" strokeWidth="1" d="M6 7h16M6 12h12M6 17h14M6 22h10" />
-                                                                <path stroke="currentColor" strokeWidth="1.5" d="M20 15l4 4-4 4" />
-                                                            </svg>
-                                                        </div>
-                                                        <div className={styles.text}>Pine</div>
-                                                    </button>
-                                                </Tooltip>
                                             </div>
 
                                             {/* Alert buttons */}
