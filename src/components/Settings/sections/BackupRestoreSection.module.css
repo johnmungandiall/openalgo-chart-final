@@ -1,0 +1,16 @@
+.section { padding: 16px; }
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tv-color-text-secondary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin: 0 0 16px 0;
+}
+.intro {
+  font-size: 13px;
+  color: var(--tv-color-text-secondary);
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+}
+.buttons { display: flex; gap: 12px; }

@@ -23,12 +23,20 @@ document.documentElement.setAttribute('data-theme', savedTheme);
 // Host + WS are forced on every load so a stale :5001 value can't win.
 localStorage.setItem('oa_host_url', 'http://127.0.0.1:1100');
 localStorage.setItem('oa_ws_url', 'ws://127.0.0.1:1200');
-// API key is NOT clobbered: keep an existing real key (REST/candles need it),
-// otherwise seed a placeholder so the dialog stays hidden. Replace the
-// placeholder with your real OpenAlgo key (http://127.0.0.1:5001/apikey) for
-// history/candles. Never commit a real key. WS ticks work with any key.
-if (!localStorage.getItem('oa_apikey')) {
-  localStorage.setItem('oa_apikey', 'YOUR_OPENALGO_API_KEY');
+// API key: REST (/history, /chart) on :1100 needs your REAL OpenAlgo key, so a
+// fake placeholder would 403 and leave the chart with no candles. Seed the key
+// from an untracked env var (VITE_OPENALGO_API_KEY in .env.local) when present —
+// never hardcode a real broker key in committed source. If no env key is set
+// and none is already saved, oa_apikey stays empty so the connect dialog appears
+// and the user can enter their key once (it then persists in localStorage).
+const OLD_PLACEHOLDER_KEY = 'YOUR_OPENALGO_API_KEY';
+const seededApiKey = import.meta.env.VITE_OPENALGO_API_KEY;
+if (seededApiKey) {
+  localStorage.setItem('oa_apikey', seededApiKey);
+} else if (localStorage.getItem('oa_apikey') === OLD_PLACEHOLDER_KEY) {
+  // Remove the harmful placeholder left by earlier builds so the connect
+  // dialog can appear instead of silently 403-ing every REST call.
+  localStorage.removeItem('oa_apikey');
 }
 // -----------------------------------------------------------------
 

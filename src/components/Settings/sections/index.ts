@@ -6,6 +6,7 @@ import OpenAlgoSection from './OpenAlgoSection';
 import LoggingSection from './LoggingSection';
 import AppearanceSection from './AppearanceSection';
 import SymbolSection from './SymbolSection';
+import BackupRestoreSection from './BackupRestoreSection';
 
 export {
     ScalesSection,
@@ -13,4 +14,5 @@ export {
     LoggingSection,
     AppearanceSection,
     SymbolSection,
+    BackupRestoreSection,
 };
