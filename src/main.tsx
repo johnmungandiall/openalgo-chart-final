@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
+import ActivationGate from './components/Activation/ActivationGate';
 import { ThemeProvider } from './context/ThemeContext';
 import { UserProvider } from './context/UserContext';
 import { UIProvider } from './context/UIContext';
@@ -69,7 +70,9 @@ if (rootElement) {
               <ToolProvider>
                 <AlertProvider>
                   <WatchlistProvider>
-                    <App />
+                    <ActivationGate>
+                      <App />
+                    </ActivationGate>
                   </WatchlistProvider>
                 </AlertProvider>
               </ToolProvider>
