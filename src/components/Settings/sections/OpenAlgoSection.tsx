@@ -1,6 +1,11 @@
 /**
  * OpenAlgo Section Component
- * OpenAlgo connection settings for SettingsPopup
+ * OpenAlgo connection settings for SettingsPopup.
+ *
+ * Host URL and WebSocket URL are fixed defaults (http://127.0.0.1:1100 and
+ * ws://127.0.0.1:1200, seeded on every launch in main.tsx) and the OpenAlgo
+ * username field was removed, so the only thing the user configures here is the
+ * API key.
  */
 import React, { useState } from 'react';
 import type { ChangeEvent } from 'react';
@@ -9,44 +14,20 @@ import styles from '../SettingsPopup.module.css';
 
 export interface OpenAlgoSectionProps {
     localHostUrl: string;
-    setLocalHostUrl: (url: string) => void;
     localApiKey: string;
     setLocalApiKey: (key: string) => void;
-    localWsUrl: string;
-    setLocalWsUrl: (url: string) => void;
-    localUsername: string;
-    setLocalUsername: (username: string) => void;
 }
 
 const OpenAlgoSection: React.FC<OpenAlgoSectionProps> = ({
     localHostUrl,
-    setLocalHostUrl,
     localApiKey,
     setLocalApiKey,
-    localWsUrl,
-    setLocalWsUrl,
-    localUsername,
-    setLocalUsername,
 }) => {
     const [showApiKey, setShowApiKey] = useState(false);
 
     return (
         <div className={styles.section}>
             <h3 className={styles.sectionTitle}>OPENALGO CONNECTION</h3>
-
-            <div className={styles.inputGroup}>
-                <label className={styles.inputLabel}>Host URL</label>
-                <input
-                    type="text"
-                    value={localHostUrl}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setLocalHostUrl(e.target.value)}
-                    placeholder="http://127.0.0.1:5001"
-                    className={styles.input}
-                />
-                <p className={styles.inputHint}>
-                    Default: http://127.0.0.1:5001. Change to use a custom OpenAlgo server URL.
-                </p>
-            </div>
 
             <div className={styles.inputGroup}>
                 <label className={styles.inputLabel}>API Key</label>
@@ -77,34 +58,6 @@ const OpenAlgoSection: React.FC<OpenAlgoSectionProps> = ({
                     >
                         OpenAlgo Dashboard
                     </a>
-                </p>
-            </div>
-
-            <div className={styles.inputGroup}>
-                <label className={styles.inputLabel}>WebSocket URL</label>
-                <input
-                    type="text"
-                    value={localWsUrl}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setLocalWsUrl(e.target.value)}
-                    placeholder="127.0.0.1:8765"
-                    className={styles.input}
-                />
-                <p className={styles.inputHint}>
-                    Default: 127.0.0.1:8765. Change to use a custom domain (e.g., openalgo.example.com:8765)
-                </p>
-            </div>
-
-            <div className={styles.inputGroup}>
-                <label className={styles.inputLabel}>OpenAlgo Username</label>
-                <input
-                    type="text"
-                    value={localUsername}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setLocalUsername(e.target.value)}
-                    placeholder="Enter your OpenAlgo login username"
-                    className={styles.input}
-                />
-                <p className={styles.inputHint}>
-                    Your OpenAlgo login username (NOT Telegram username). Required for Telegram notifications.
                 </p>
             </div>
         </div>

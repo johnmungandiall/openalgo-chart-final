@@ -256,13 +256,8 @@ const SettingsPopup: FC<SettingsPopupProps> = ({
                     {activeSection === 'openalgo' && (
                         <OpenAlgoSection
                             localHostUrl={localHostUrl}
-                            setLocalHostUrl={setLocalHostUrl}
                             localApiKey={localApiKey}
                             setLocalApiKey={setLocalApiKey}
-                            localWsUrl={localWsUrl}
-                            setLocalWsUrl={setLocalWsUrl}
-                            localUsername={localUsername}
-                            setLocalUsername={setLocalUsername}
                         />
                     )}
 
