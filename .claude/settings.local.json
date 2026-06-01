@@ -49,7 +49,8 @@
       "PowerShell(npm.cmd run build)",
       "PowerShell(Stop-Process -Id 7308 -Force -ErrorAction SilentlyContinue)",
       "PowerShell(\"stopped old preview\")",
-      "PowerShell(npm.cmd run preview)"
+      "PowerShell(npm.cmd run preview)",
+      "PowerShell(Get-Item \"c:\\\\Qwantonomous\\\\openalgo-chart-final\\\\installer\\\\Output\\\\OpenAlgo-Chart-1.0.1-Setup.exe\" | Select-Object FullName, @{N='MB';E={[math]::Round\\($_.Length/1MB,2\\)}}, LastWriteTime)"
     ]
   }
 }
