@@ -2,7 +2,17 @@
 
 All notable changes to Open Chart will be documented in this file.
 
-## [Unreleased]
+## [1.0.4] - 2026-06-03
+
+### Added
+- **LIVE / DEMO mode toggle.** A segmented `LIVE | DEMO` control in the Topbar
+  (next to the theme toggle) replaces the URL-only `?demo=true` mechanism.
+  `isDemoMode()` is now localStorage-backed (key `oc_demo_mode`), with the URL
+  `?demo=true|false` kept as an explicit override. New `setDemoMode()` persists the
+  choice, clears any `?demo` override, and reloads so every mount-time consumer
+  (auth gate, WebSocket, charts, alert monitor) re-initialises cleanly. The choice
+  survives app restarts. Switching confirms first.
+  (`src/services/mockDataService.ts`, `src/components/Topbar/components/ModeToggle.tsx`)
 
 ### Fixed
 - **Indicator alerts — "Once Per Bar Close" now actually waits for the candle to close.**
@@ -16,6 +26,8 @@ All notable changes to Open Chart will be documented in this file.
   Applies to existing alerts too — no need to recreate them.
   (`src/services/globalAlertMonitor.ts`, regression test
   `src/__tests__/globalAlertMonitorBarClose.test.ts`)
+
+## [Unreleased]
 
 ### Added
 - **TypeScript Migration**: Full TypeScript configuration with strict mode
