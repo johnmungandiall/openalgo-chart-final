@@ -44,6 +44,7 @@ The app follows a strict layered architecture: Components → Hooks → Services
 - **Market data flow**: WebSocket → `tickDataService` → `marketDataStore` → components subscribe via selectors.
 - **Chart management**: `ChartGrid` renders 1–4 independent `ChartComponent` panels. Each chart has its own symbol, interval, indicators, and strategy config managed through `workspaceStore`.
 - **Indicator lifecycle**: Creation in `indicatorCreators.ts`, updates in `indicatorUpdaters.ts`, cleanup in `indicatorCleanup.ts`, metadata in `indicatorMetadata.ts` (all under `src/components/Chart/utils/`).
+- **Alert evaluation**: `globalAlertMonitor` runs in the background, independent of what any chart shows. Each alert is a snapshot of its own `symbol`, `exchange`, `interval`, and indicator `params` captured at creation — changing the chart's symbol/timeframe does NOT affect existing alerts. On every WebSocket tick the monitor recalculates the indicator from the cached OHLC array via `indicatorDataManager.calculateIndicator()`. **Gotcha:** the chart updates the last OHLC element in place, so `ohlcData[n-1]` is the still-forming candle. `once_per_bar` evaluates that forming bar (intrabar); `once_per_bar_close` drops it and evaluates the last *closed* bar's immutable values. Capture new indicator calc params in `src/constants/indicatorParamKeys.ts`.
 
 ### TypeScript Configuration
 
