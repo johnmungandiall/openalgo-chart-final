@@ -1,6 +1,6 @@
 # Indicator E2E Test Suite
 
-Comprehensive end-to-end tests for all 20 indicators in the OpenAlgo Chart system.
+Comprehensive end-to-end tests for all 20 indicators in the Open Chart system.
 
 ## Overview
 

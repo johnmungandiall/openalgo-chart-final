@@ -4,7 +4,9 @@ import { Eye, EyeOff } from 'lucide-react';
 import { BaseModal, BaseButton } from '../shared';
 import { get, set } from '../../services/storageService';
 
-const DEFAULT_HOST = 'http://127.0.0.1:5001';
+// Host is fixed to the bundled gateway (REST on :1100) and is NOT user-editable.
+// main.tsx seeds oa_host_url to this on every launch; we only ask for the API key.
+const DEFAULT_HOST = 'http://127.0.0.1:1100';
 
 // Localhost backends are reached through the Vite proxy (relative path) so the
 // request stays same-origin and dodges the backend's CORS policy. Keep this list
@@ -20,9 +22,8 @@ export interface ApiKeyDialogProps {
 }
 
 const ApiKeyDialog: React.FC<ApiKeyDialogProps> = ({ onSave, onClose }) => {
-    const [hostUrl, setHostUrl] = useState(() => {
-        return get('oa_host_url') || DEFAULT_HOST;
-    });
+    // Fixed host (not editable) — only the API key is collected from the user.
+    const hostUrl = get('oa_host_url') || DEFAULT_HOST;
     const [apiKey, setApiKey] = useState('');
     const [showApiKey, setShowApiKey] = useState(false);
     const [error, setError] = useState('');
@@ -133,26 +134,10 @@ const ApiKeyDialog: React.FC<ApiKeyDialogProps> = ({ onSave, onClose }) => {
                 fontSize: '13px',
                 lineHeight: 1.5
             }}>
-                Configure your OpenAlgo server connection.
+                Enter your OpenAlgo API key to connect.
             </p>
 
             <form onSubmit={handleSubmit} id="apikey-form">
-                {/* Host URL Field */}
-                <div style={{ marginBottom: '16px' }}>
-                    <label style={labelStyle}>Host URL</label>
-                    <input
-                        type="text"
-                        value={hostUrl}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => setHostUrl(e.target.value)}
-                        placeholder="http://127.0.0.1:5001"
-                        style={inputStyle}
-                        className="focusable-input"
-                    />
-                    <p style={hintStyle}>
-                        Default: http://127.0.0.1:5001
-                    </p>
-                </div>
-
                 {/* API Key Field */}
                 <div style={{ marginBottom: '24px' }}>
                     <label style={labelStyle}>API Key</label>

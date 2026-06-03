@@ -2,7 +2,7 @@
 
 ## Introduction
 
-OpenAlgo Chart is a professional trading chart application built with React and TypeScript. It connects to the OpenAlgo backend API for market data and order execution.
+Open Chart is a professional trading chart application built with React and TypeScript. It connects to the OpenAlgo backend API for market data and order execution.
 
 ## System Components
 

@@ -1,6 +1,6 @@
 # Release Runbook — Windows `.exe` (Tauri)
 
-How to ship OpenAlgo Chart as an installable Windows `.exe` with the source
+How to ship Open Chart as an installable Windows `.exe` with the source
 code hidden. Follow these steps to reproduce exactly the release we built.
 
 The app is wrapped in a **Tauri v2** shell: the built frontend (`dist/`) gets
@@ -86,11 +86,11 @@ First build takes ~10-15 min (compiles ~470 Rust crates). Later builds are
 
 | File | Size | Use |
 |------|------|-----|
-| `src-tauri/target/release/bundle/nsis/OpenAlgo Chart_<version>_x64-setup.exe` | ~2 MB | **Installer — give this to users** |
+| `src-tauri/target/release/bundle/nsis/Open Chart_<version>_x64-setup.exe` | ~2 MB | **Installer — give this to users** |
 | `src-tauri/target/release/app.exe` | ~9 MB | Portable build — runs without installing |
 
 > The portable binary is named `app.exe` (the Rust crate name). The *installed*
-> app shows as "OpenAlgo Chart". To rename the portable exe, set a
+> app shows as "Open Chart". To rename the portable exe, set a
 > `mainBinaryName` in `tauri.conf.json` or rename the `[package] name` in
 > `src-tauri/Cargo.toml`, then rebuild.
 

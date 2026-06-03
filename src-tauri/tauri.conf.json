@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "OpenAlgo Chart",
-  "version": "1.0.1",
-  "identifier": "in.quantonomous.openalgochart",
+  "productName": "Open Chart",
+  "version": "1.0.3",
+  "identifier": "in.quantonomous.openchart",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "OpenAlgo Chart",
+        "title": "Open Chart",
         "width": 1440,
         "height": 900,
         "minWidth": 1024,

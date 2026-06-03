@@ -6,7 +6,7 @@
 
 ## Goal
 
-Gate the desktop (`.exe`) build of OpenAlgo Chart behind a **14-day free trial,
+Gate the desktop (`.exe`) build of Open Chart behind a **14-day free trial,
 then a paid activation key**, with a central source of truth (Supabase) so keys
 can be issued, expired, and revoked.
 

@@ -1,4 +1,4 @@
-# OpenAlgo Chart - Branch Comparison Report
+# Open Chart - Branch Comparison Report
 ## `update` Branch vs `micro` Branch
 
 **Date:** January 13, 2026

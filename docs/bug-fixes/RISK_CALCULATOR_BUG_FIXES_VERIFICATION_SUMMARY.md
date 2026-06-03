@@ -120,7 +120,7 @@ The system now automatically detects whether a trade should be BUY or SELL based
 ## Test Environment
 
 ### Application Details
-- **Application:** OpenAlgo Chart
+- **Application:** Open Chart
 - **Port:** 5001 (Vite dev server)
 - **Symbol Tested:** ADANIGREEN:NSE
 - **Timeframe:** 5 minutes

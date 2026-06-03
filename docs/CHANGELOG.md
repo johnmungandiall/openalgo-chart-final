@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to OpenAlgo Chart will be documented in this file.
+All notable changes to Open Chart will be documented in this file.
 
 ## [Unreleased]
 

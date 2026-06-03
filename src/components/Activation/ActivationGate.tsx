@@ -132,7 +132,7 @@ export default function ActivationGate({ children }: ActivationGateProps) {
         <div className={styles.card}>
           <h1 className={styles.title}>No internet connection</h1>
           <p className={styles.text}>
-            OpenAlgo Chart needs to verify your license online. Connect to the internet and retry.
+            Open Chart needs to verify your license online. Connect to the internet and retry.
           </p>
           <button className={styles.primaryBtn} onClick={() => void check()}>
             Retry
@@ -156,7 +156,7 @@ export default function ActivationGate({ children }: ActivationGateProps) {
       <form className={styles.card} onSubmit={handleActivate}>
         <h1 className={styles.title}>{lockHeading}</h1>
         <p className={styles.text}>
-          Enter the activation key you received to unlock OpenAlgo Chart on this device.
+          Enter the activation key you received to unlock Open Chart on this device.
         </p>
         <input
           className={styles.input}

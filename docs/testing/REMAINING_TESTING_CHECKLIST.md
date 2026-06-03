@@ -1,4 +1,4 @@
-# Remaining Testing Checklist - OpenAlgo-Chart
+# Remaining Testing Checklist - Open Chart
 
 **Current Progress**: 35% complete (11/33 features tested)
 **Remaining**: 65% (22 features)

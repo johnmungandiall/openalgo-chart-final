@@ -1,4 +1,4 @@
-# OpenAlgo-Chart UI Testing & Bug Report
+# Open Chart UI Testing & Bug Report
 **Date**: 2026-01-21
 **Test Environment**: http://localhost:5001
 **Testing Tool**: Playwright Browser Automation

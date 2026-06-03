@@ -1,6 +1,6 @@
 # Installation Guide
 
-This guide covers setting up OpenAlgo Chart for local development and Docker deployment.
+This guide covers setting up Open Chart for local development and Docker deployment.
 
 ## Table of Contents
 

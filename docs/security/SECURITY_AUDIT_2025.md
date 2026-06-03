@@ -1,5 +1,5 @@
 # Comprehensive Security Audit Report 2025
-## OpenAlgo Chart Application
+## Open Chart Application
 
 **Audit Date**: 2025-01-20
 **Audit Type**: Buffer Overflow, Memory Leak, Race Condition & Bug Analysis
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-A comprehensive security audit was conducted across the OpenAlgo Chart codebase, examining:
+A comprehensive security audit was conducted across the Open Chart codebase, examining:
 - **Memory Leaks**: Event listeners, timers, WebSocket connections, unbounded caches
 - **Race Conditions**: State synchronization, concurrent operations, TOCTOU bugs
 - **Buffer Overflows**: Array bounds violations (JavaScript context)

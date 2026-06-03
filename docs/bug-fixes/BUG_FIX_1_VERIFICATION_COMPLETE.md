@@ -2,7 +2,7 @@
 
 ## Test Date: January 20, 2026
 ## Tested By: Playwright Browser Automation
-## Application: OpenAlgo Chart (Port 5001)
+## Application: Open Chart (Port 5001)
 
 ---
 
@@ -118,7 +118,7 @@ The chart labels on the right side confirm:
 
 ## Test Environment
 
-- **Application:** OpenAlgo Chart
+- **Application:** Open Chart
 - **Port:** 5001
 - **Symbol:** ADANIGREEN:NSE
 - **Timeframe:** 5 minutes

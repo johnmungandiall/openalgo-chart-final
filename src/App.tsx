@@ -2027,6 +2027,10 @@ function AppContent({ isAuthenticated, setIsAuthenticated }) {
             <AlertsPanel
               alerts={alerts as any}
               logs={alertLogs as any}
+              currentSymbol={currentSymbol}
+              currentExchange={currentExchange}
+              onClearAlerts={() => { setAlerts([] as any); globalAlertMonitor.refresh(); }}
+              onClearLogs={() => setAlertLogs([])}
               onRemoveAlert={handleRemoveAlert}
               onRestartAlert={handleRestartAlert}
               onPauseAlert={handlePauseAlert}

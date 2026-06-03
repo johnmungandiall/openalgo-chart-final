@@ -1,4 +1,4 @@
-# Contributing to OpenAlgo Chart
+# Contributing to Open Chart
 
 ## Development Setup
 

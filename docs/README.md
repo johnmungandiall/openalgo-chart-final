@@ -1,6 +1,6 @@
-# OpenAlgo Chart Documentation
+# Open Chart Documentation
 
-Comprehensive documentation for the OpenAlgo Chart application, organized by category.
+Comprehensive documentation for the Open Chart application, organized by category.
 
 ---
 
@@ -280,4 +280,4 @@ For questions or issues:
 ✅ **Comprehensive Documentation** - 400KB+ of detailed reports
 ✅ **Security Audited** - Complete OWASP compliance
 
-**The OpenAlgo Chart application is production-ready with exceptional code quality.**
+**The Open Chart application is production-ready with exceptional code quality.**

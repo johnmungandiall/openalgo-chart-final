@@ -1,17 +1,17 @@
-; Inno Setup script - standalone Windows installer for OpenAlgo Chart.
+; Inno Setup script - standalone Windows installer for Open Chart.
 ; Packages the single self-contained Tauri binary (app.exe) as a proper
-; installed app named "OpenAlgo Chart.exe" with Start Menu / desktop shortcuts
+; installed app named "Open Chart.exe" with Start Menu / desktop shortcuts
 ; and an uninstaller. No admin rights required (per-user install).
 ;
-; Build:  "C:\Program Files\Inno Setup 7\ISCC.exe" installer\openalgo-chart.iss
-; Output: installer\Output\OpenAlgo-Chart-<version>-Setup.exe
+; Build:  "C:\Program Files\Inno Setup 7\ISCC.exe" installer\open-chart.iss
+; Output: installer\Output\Open-Chart-<version>-Setup.exe
 ;
 ; Note: the app renders in the WebView2 runtime, which ships with Windows 10/11.
 
-#define MyAppName "OpenAlgo Chart"
-#define MyAppVersion "1.0.1"
+#define MyAppName "Open Chart"
+#define MyAppVersion "1.0.3"
 #define MyAppPublisher "Quantonomous"
-#define MyAppExeName "OpenAlgo Chart.exe"
+#define MyAppExeName "Open Chart.exe"
 
 [Setup]
 AppId={{A1B2C3D4-E5F6-47A8-9B0C-1D2E3F4A5B6C}
@@ -23,7 +23,7 @@ DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=Output
-OutputBaseFilename=OpenAlgo-Chart-{#MyAppVersion}-Setup
+OutputBaseFilename=Open-Chart-{#MyAppVersion}-Setup
 Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern

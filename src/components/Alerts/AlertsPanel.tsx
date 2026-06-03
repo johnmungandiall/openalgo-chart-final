@@ -1,8 +1,9 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import type { KeyboardEvent, MouseEvent } from 'react';
 import { Bell, Trash2, PlayCircle, PauseCircle, Edit2, TrendingUp } from 'lucide-react';
 import styles from './AlertsPanel.module.css';
 import classNames from 'classnames';
+import { filterAlertsBySymbol, type SymbolFilterMode } from './alertSymbolFilter';
 
 type AlertStatus = 'Active' | 'Triggered' | 'Paused';
 
@@ -42,6 +43,13 @@ export interface AlertsPanelProps {
     onPauseAlert: (id: string) => void;
     onNavigate?: (info: NavigateInfo) => void;
     onEditAlert?: (alert: Alert) => void;
+    /** Active chart symbol/exchange — drives the "This symbol"/"This underlying" filter */
+    currentSymbol?: string;
+    currentExchange?: string;
+    /** Clear all alerts (Alerts tab) */
+    onClearAlerts?: () => void;
+    /** Clear all alert history (Log tab) */
+    onClearLogs?: () => void;
 }
 
 const AlertsPanel: React.FC<AlertsPanelProps> = ({
@@ -51,11 +59,27 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({
     onRestartAlert,
     onPauseAlert,
     onNavigate,
-    onEditAlert
+    onEditAlert,
+    currentSymbol,
+    currentExchange,
+    onClearAlerts,
+    onClearLogs
 }) => {
     const [activeTab, setActiveTab] = useState<'alerts' | 'log'>('alerts');
     const [focusedIndex, setFocusedIndex] = useState(-1);
+    const [symbolFilter, setSymbolFilter] = useState<SymbolFilterMode>('all');
     const listRef = useRef<HTMLDivElement>(null);
+
+    // Alerts scoped to the active chart symbol per the selected filter mode.
+    const visibleAlerts = useMemo(
+        () => filterAlertsBySymbol(alerts, symbolFilter, currentSymbol, currentExchange),
+        [alerts, symbolFilter, currentSymbol, currentExchange]
+    );
+
+    // Reset focus when the filter changes so the index can't point past the list.
+    useEffect(() => {
+        setFocusedIndex(-1);
+    }, [symbolFilter]);
 
     // Reset focusedIndex when tab changes
     useEffect(() => {
@@ -64,7 +88,7 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({
 
     // Keyboard navigation handler
     const handleKeyDown = useCallback((e: KeyboardEvent<HTMLDivElement>): void => {
-        const items = activeTab === 'alerts' ? alerts : logs;
+        const items = activeTab === 'alerts' ? visibleAlerts : logs;
         if (items.length === 0) return;
 
         if (e.key === 'ArrowDown') {
@@ -75,14 +99,25 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({
             setFocusedIndex(prev => prev < 0 ? 0 : Math.max(prev - 1, 0));
         } else if (e.key === 'Delete' && focusedIndex >= 0 && activeTab === 'alerts') {
             e.preventDefault();
-            onRemoveAlert(alerts[focusedIndex].id);
+            onRemoveAlert(visibleAlerts[focusedIndex].id);
         } else if (e.key === ' ' && focusedIndex >= 0 && activeTab === 'alerts') {
             e.preventDefault();
-            const alert = alerts[focusedIndex];
+            const alert = visibleAlerts[focusedIndex];
             if (alert.status === 'Active') onPauseAlert(alert.id);
             else onRestartAlert(alert.id);
         }
-    }, [activeTab, alerts, logs, focusedIndex, onRemoveAlert, onPauseAlert, onRestartAlert]);
+    }, [activeTab, visibleAlerts, logs, focusedIndex, onRemoveAlert, onPauseAlert, onRestartAlert]);
+
+    // Clear the active tab (alerts or history), with a confirm prompt.
+    const handleClear = useCallback((): void => {
+        if (activeTab === 'alerts') {
+            if (alerts.length === 0) return;
+            if (window.confirm('Clear all alerts?')) onClearAlerts?.();
+        } else {
+            if (logs.length === 0) return;
+            if (window.confirm('Clear all alert history?')) onClearLogs?.();
+        }
+    }, [activeTab, alerts.length, logs.length, onClearAlerts, onClearLogs]);
 
     // Handle click on alert row to navigate to that chart
     const handleAlertClick = useCallback((alert: Alert, e: MouseEvent<HTMLDivElement>): void => {
@@ -99,7 +134,16 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({
             <div className={styles.header}>
                 <span className={styles.title}>Alerts</span>
                 <div className={styles.actions}>
-                    {/* Add actions if needed */}
+                    <button
+                        type="button"
+                        className={styles.clearBtn}
+                        onClick={handleClear}
+                        disabled={activeTab === 'alerts' ? alerts.length === 0 : logs.length === 0}
+                        title={activeTab === 'alerts' ? 'Clear all alerts' : 'Clear alert history'}
+                    >
+                        <Trash2 size={14} />
+                        <span>Clear</span>
+                    </button>
                 </div>
             </div>
 
@@ -119,6 +163,27 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({
                 </div>
             </div>
 
+            {activeTab === 'alerts' && (
+                <div className={styles.filterBar} role="group" aria-label="Filter alerts by symbol">
+                    {([
+                        ['all', 'All'],
+                        ['symbol', 'This symbol'],
+                        ['underlying', 'This underlying'],
+                    ] as [SymbolFilterMode, string][]).map(([mode, label]) => (
+                        <button
+                            key={mode}
+                            type="button"
+                            className={classNames(styles.filterBtn, { [styles.filterBtnActive]: symbolFilter === mode })}
+                            onClick={() => setSymbolFilter(mode)}
+                            disabled={mode !== 'all' && !currentSymbol}
+                            title={mode !== 'all' && currentSymbol ? `${label}: ${currentSymbol}` : label}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </div>
+            )}
+
             <div className={styles.content}>
                 {activeTab === 'alerts' ? (
                     <div
@@ -127,10 +192,14 @@ const AlertsPanel: React.FC<AlertsPanelProps> = ({
                         tabIndex={0}
                         onKeyDown={handleKeyDown}
                     >
-                        {alerts.length === 0 ? (
-                            <div className={styles.emptyState}>No active alerts</div>
+                        {visibleAlerts.length === 0 ? (
+                            <div className={styles.emptyState}>
+                                {alerts.length === 0
+                                    ? 'No active alerts'
+                                    : `No alerts for ${currentSymbol || 'this symbol'}`}
+                            </div>
                         ) : (
-                            alerts.map((alert, index) => {
+                            visibleAlerts.map((alert, index) => {
                                 // Normalize status so we always show a readable label
                                 const status = alert.status || 'Active';
                                 const statusKey = status.toLowerCase();

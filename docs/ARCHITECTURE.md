@@ -1,4 +1,4 @@
-# OpenAlgo Chart Architecture
+# Open Chart Architecture
 
 ## System Overview
 

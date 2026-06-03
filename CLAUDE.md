@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-OpenAlgo Chart is a professional trading/charting application built with React 19, TypeScript, and the `lightweight-charts` library. It connects to an OpenAlgo backend (REST API on port 5000, WebSocket on port 8765) for market data and order execution. Designed for localhost-only use.
+Open Chart is a professional trading/charting application built with React 19, TypeScript, and the `lightweight-charts` library. It connects to an OpenAlgo backend (REST API on port 5000, WebSocket on port 8765) for market data and order execution. Designed for localhost-only use.
 
 ## Commands
 

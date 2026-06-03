@@ -207,3 +207,66 @@
 .indicatorAlert {
     border-left: 2px solid #2962FF;
 }
+
+/* Symbol filter segmented control */
+.filterBar {
+    display: flex;
+    gap: 4px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--tv-color-border);
+}
+
+.filterBtn {
+    flex: 1;
+    padding: 5px 8px;
+    font-size: 12px;
+    color: var(--tv-color-text-secondary);
+    background-color: transparent;
+    border: 1px solid var(--tv-color-border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.filterBtn:hover:not(:disabled) {
+    color: var(--tv-color-text-primary);
+    border-color: var(--tv-color-text-secondary);
+}
+
+.filterBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.filterBtnActive,
+.filterBtnActive:hover:not(:disabled) {
+    color: #fff;
+    background-color: var(--tv-color-brand);
+    border-color: var(--tv-color-brand);
+}
+
+/* Clear button in the header */
+.clearBtn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--tv-color-text-secondary);
+    background-color: transparent;
+    border: 1px solid var(--tv-color-border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.clearBtn:hover:not(:disabled) {
+    color: #F23645;
+    border-color: #F23645;
+}
+
+.clearBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
