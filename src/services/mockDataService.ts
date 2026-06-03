@@ -16,15 +16,44 @@ export interface MockCandle {
     volume: number;
 }
 
+/** localStorage key persisting the user's LIVE/DEMO choice across reloads/restarts. */
+export const DEMO_MODE_KEY = 'oc_demo_mode';
+
 /**
- * Check if demo mode is enabled via URL parameter
+ * Check if demo mode is enabled.
+ * URL `?demo=true|false` is an explicit override (back-compat / deep links);
+ * otherwise the persisted localStorage choice wins.
  */
 export function isDemoMode(): boolean {
     try {
         const params = new URLSearchParams(window.location.search);
-        return params.get('demo') === 'true';
+        const override = params.get('demo');
+        if (override === 'true') return true;
+        if (override === 'false') return false;
+        return localStorage.getItem(DEMO_MODE_KEY) === 'true';
     } catch {
         return false;
+    }
+}
+
+/**
+ * Persist the LIVE/DEMO choice and reload so every mount-time `isDemoMode()`
+ * consumer (auth gate, WebSocket, charts, alert monitor) re-initialises cleanly.
+ */
+export function setDemoMode(enabled: boolean): void {
+    try {
+        localStorage.setItem(DEMO_MODE_KEY, enabled ? 'true' : 'false');
+        const url = new URL(window.location.href);
+        const hadParam = url.searchParams.has('demo');
+        url.searchParams.delete('demo');
+        if (hadParam) {
+            // Drop the override so the persisted choice takes effect, then reload.
+            window.location.replace(url.toString());
+        } else {
+            window.location.reload();
+        }
+    } catch {
+        /* no-op: localStorage / location unavailable */
     }
 }
 

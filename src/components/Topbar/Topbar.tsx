@@ -6,6 +6,7 @@ import { intervalToSeconds } from '../../utils/timeframes';
 import { getIntervals } from '../../services/openalgo';
 import { logger } from '../../utils/logger';
 import Tooltip from '../Tooltip/Tooltip';
+import ModeToggle from './components/ModeToggle';
 import {
     Plus, Star, Trash2, X, AlertCircle, Loader2, Layout as LayoutIcon, BarChart3, Bookmark
 } from 'lucide-react';
@@ -795,6 +796,8 @@ const Topbar: React.FC<TopbarProps> = ({
 
                                             {/* Right Section */}
                                             <div className={styles.rightSection}>
+                                                <ModeToggle />
+                                                <div className={styles.separatorWrap}><div className={styles.separator}></div></div>
                                                 <div className={styles.layoutSection} ref={layoutRef}>
                                                     <button
                                                         className={classNames(styles.button, styles.menuButton)}

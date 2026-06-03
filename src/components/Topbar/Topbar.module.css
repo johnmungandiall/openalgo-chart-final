@@ -731,3 +731,48 @@
     flex-shrink: 0;
     color: var(--tv-color-text-secondary);
 }
+/* LIVE / DEMO mode toggle */
+.modeToggle {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--tv-color-border);
+    border-radius: 4px;
+    overflow: hidden;
+    height: 28px;
+}
+
+.modeSegment {
+    appearance: none;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    height: 100%;
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--tv-color-text-secondary);
+    transition: color 0.1s, background-color 0.1s;
+}
+
+.modeSegment:hover {
+    background-color: var(--tv-color-toolbar-button-background-hover);
+}
+
+.modeSegmentActiveLive {
+    color: #fff;
+    background-color: #089981; /* green = live */
+}
+
+.modeSegmentActiveLive:hover {
+    background-color: #089981;
+}
+
+.modeSegmentActiveDemo {
+    color: #fff;
+    background-color: #f0a500; /* amber = demo */
+}
+
+.modeSegmentActiveDemo:hover {
+    background-color: #f0a500;
+}
