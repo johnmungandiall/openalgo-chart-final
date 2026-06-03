@@ -9,3 +9,4 @@ A running log of orchestration runs and their outcomes.
 | 2026-05-01 | Bypass auth for demo mode (alerts + chart) | manual | Done |
 | 2026-05-01 | Fix indicator alerts not evaluating (field name mismatch + missing value) | manual | Done |
 | 2026-05-01 | Add WebSocket exponential backoff to reduce console spam | manual | Done |
+| 2026-06-03 | Fix "Once Per Bar Close" indicator alerts firing intrabar (was treated as once_per_bar → false alerts); evaluate the closed bar | manual | Done |

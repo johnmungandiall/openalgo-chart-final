@@ -506,14 +506,25 @@ class GlobalAlertMonitor {
             ohlcData = fetched;
           }
 
+          // "Once per bar close" must evaluate the LAST CLOSED bar, not the live
+          // forming one. The chart updates the last OHLC element in place on every
+          // tick, so ohlcData[n-1] is the still-forming candle. Dropping it makes
+          // calculateIndicator return the just-closed bar as `current` (immutable
+          // final values) — no intrabar repaint, so the alert fires once when the
+          // candle actually closes instead of on a transient mid-bar signal.
+          const isCloseFreq = alert.frequency === 'once_per_bar_close';
+          const evalData =
+            isCloseFreq && ohlcData.length > 2 ? ohlcData.slice(0, -1) : ohlcData;
+
           logger.debug(
-            `[GlobalAlertMonitor] Calculating ${indicatorId} for ${symbol} with ${ohlcData.length} bars`
+            `[GlobalAlertMonitor] Calculating ${indicatorId} for ${symbol} with ${evalData.length} bars` +
+              (isCloseFreq ? ' (bar-close: forming bar excluded)' : '')
           );
 
           const indicatorData = await this._indicatorDataManager.calculateIndicator(
             indicatorId,
             { symbol, exchange, interval },
-            ohlcData,
+            evalData,
             alert.params || {}
           );
 
@@ -525,13 +536,22 @@ class GlobalAlertMonitor {
           const previousData = indicatorData?.previous || this._previousIndicatorValues.get(cacheKey);
 
           if (indicatorData && indicatorData.current) {
-            const previousPrice = this._lastPrices.get(key);
+            // For bar-close alerts, price-based conditions must compare against the
+            // closed bar's close — not the live tick — to stay consistent with the
+            // indicator values computed from the closed bar above.
+            const evalCurrentPrice = isCloseFreq
+              ? evalData[evalData.length - 1]?.close ?? currentPrice
+              : currentPrice;
+            const evalPreviousPrice = isCloseFreq
+              ? evalData[evalData.length - 2]?.close ?? null
+              : this._lastPrices.get(key) ?? null;
+
             const triggerEvent = this._checkIndicatorAlert(
               alert as StoredAlert & { condition?: IndicatorCondition },
               indicatorData.current,
               previousData,
-              currentPrice,
-              previousPrice ?? null
+              evalCurrentPrice,
+              evalPreviousPrice
             );
 
             if (triggerEvent) {
@@ -539,7 +559,10 @@ class GlobalAlertMonitor {
               const currentBarTime = (indicatorData.current.time as number) || 0;
               const lastTriggeredTime = this._alertTriggerTimes.get(alert.id);
               
-              const isOncePerBar = frequency === 'once_per_bar' || frequency === 'once_per_bar_close'; // Treat close same as once_per_bar for now as evaluation happens real-time
+              // once_per_bar and once_per_bar_close both fire at most once per bar.
+              // They differ only in WHICH bar is evaluated (live forming vs. closed —
+              // see evalData above); the per-bar de-dupe key is current.time either way.
+              const isOncePerBar = frequency === 'once_per_bar' || frequency === 'once_per_bar_close';
               const isOnlyOnce = frequency === 'only_once';
 
               // If it's once per bar, only trigger if we haven't triggered on this exact bar time yet

@@ -4,6 +4,19 @@ All notable changes to Open Chart will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- **Indicator alerts — "Once Per Bar Close" now actually waits for the candle to close.**
+  Previously this frequency behaved identically to "Once Per Bar": the background
+  monitor recalculated indicators from the live, still-forming candle and fired on
+  the first transient intrabar signal (e.g. UT Bot UP/DN flips that reversed before
+  the bar closed), producing false alerts. The monitor now drops the forming bar and
+  evaluates the last *closed* bar's final, immutable values for `once_per_bar_close`,
+  so the alert fires once per bar at close. Price-based conditions compare against the
+  closed bar's close instead of the live tick. `once_per_bar` (intrabar) is unchanged.
+  Applies to existing alerts too — no need to recreate them.
+  (`src/services/globalAlertMonitor.ts`, regression test
+  `src/__tests__/globalAlertMonitorBarClose.test.ts`)
+
 ### Added
 - **TypeScript Migration**: Full TypeScript configuration with strict mode
   - `tsconfig.json` with comprehensive strict type checking
