@@ -11,6 +11,7 @@ import {
 } from '../../utils/alerts/alertConditions';
 import { getDefaultMessageTemplate, AVAILABLE_PLACEHOLDERS } from '../../utils/alerts/alertMessageTemplate';
 import { safeParseJSON } from '../../utils/appUtils';
+import { INDICATOR_PARAM_KEYS, extractIndicatorParams } from '../../constants/indicatorParamKeys';
 import DynamicConditionConfig from './DynamicConditionConfig';
 
 type Theme = 'dark' | 'light';
@@ -60,6 +61,8 @@ interface Alert {
     created_at: string;
     status: string;
     interval: string;
+    /** Live indicator settings captured at creation, e.g. { keyValues, atrPeriod } */
+    params?: Record<string, number>;
 }
 
 interface AlertToEdit {
@@ -72,6 +75,7 @@ interface AlertToEdit {
     frequency?: Frequency;
     interval?: string;
     created_at?: string;
+    params?: Record<string, number>;
 }
 
 interface PlaceholderItem {
@@ -253,6 +257,21 @@ const IndicatorAlertDialog: FC<IndicatorAlertDialogProps> = ({
             return;
         }
 
+        // Capture the LIVE indicator settings (e.g. UT Bot's keyValues / atrPeriod)
+        // from the chart so the background alert monitor evaluates with the SAME
+        // params the user sees — instead of hardcoded defaults.
+        let params: Record<string, number> = {};
+        if ((INDICATOR_PARAM_KEYS[selectedIndicator] || []).length > 0) {
+            const liveIndicators = (Array.isArray(activeIndicators) ? activeIndicators : []) as unknown as Array<Record<string, unknown>>;
+            const match = liveIndicators.find((ind) => ind && ind.type === selectedIndicator);
+            params = extractIndicatorParams(selectedIndicator, match);
+            // Preserve previously-saved params when editing if the indicator is no
+            // longer on the chart (match not found / empty).
+            if (Object.keys(params).length === 0 && alertToEdit?.params) {
+                params = alertToEdit.params;
+            }
+        }
+
         const alert: Alert = {
             id: alertToEdit ? alertToEdit.id : `indicator-alert-${Date.now()}`,
             type: 'indicator',
@@ -278,6 +297,7 @@ const IndicatorAlertDialog: FC<IndicatorAlertDialogProps> = ({
             created_at: alertToEdit?.created_at || new Date().toISOString(),
             status: 'Active',
             interval,
+            params,
         };
 
         onSave(alert);

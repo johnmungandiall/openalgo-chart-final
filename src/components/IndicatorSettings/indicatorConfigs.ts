@@ -384,7 +384,7 @@ export const indicatorConfigs: Record<string, IndicatorConfigDefinition> = {
         description: 'UT Bot Alerts indicator with Buy/Sell signals and trailing stop',
         inputs: [
             { key: 'keyValues', label: 'Key Value (Sensitivity)', type: 'number', min: 1, max: 10, default: 1 },
-            { key: 'atrPeriod', label: 'ATR Period', type: 'number', min: 1, max: 100, default: 10 },
+            { key: 'atrPeriod', label: 'ATR Period', type: 'number', min: 1, max: 500, default: 10 },
         ],
         style: [
             { key: 'upColor', label: 'Buy Signal', type: 'color', default: '#26A69A' },

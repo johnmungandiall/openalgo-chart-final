@@ -39,6 +39,8 @@ export interface StoredAlert {
   message?: string | undefined;
   alert_type?: string | undefined;
   webhookUrl?: string | undefined;
+  /** Live indicator settings captured at creation, e.g. { keyValues, atrPeriod } */
+  params?: Record<string, number> | undefined;
 }
 
 /** Alert trigger event */
@@ -511,7 +513,8 @@ class GlobalAlertMonitor {
           const indicatorData = await this._indicatorDataManager.calculateIndicator(
             indicatorId,
             { symbol, exchange, interval },
-            ohlcData
+            ohlcData,
+            alert.params || {}
           );
 
           // Always use indicatorData.previous (second-to-last bar from calculation)

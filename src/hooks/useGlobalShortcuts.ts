@@ -91,29 +91,35 @@ export function useGlobalShortcuts(
     // Check if shortcut is disabled
     if (disabledShortcuts.includes(matchedId)) return;
 
-    // Determine if this is a modifier shortcut (Cmd/Ctrl + key)
-    const hasModifier = (matchedShortcut.modifiers?.length ?? 0) > 0;
+    // A "command modifier" is Cmd/Ctrl or Alt — these form real chords that do
+    // not produce text. Shift is deliberately EXCLUDED: Shift+<key> just types a
+    // character (e.g. Shift+T = "T"), so a shift-only shortcut must be treated
+    // like a single-key shortcut and blocked while the user is typing — otherwise
+    // it preventDefault()s the keystroke and the character never reaches the input.
+    const hasCommandModifier =
+      (matchedShortcut.modifiers?.includes('cmd') ?? false) ||
+      (matchedShortcut.modifiers?.includes('alt') ?? false);
 
     // When typing in input fields:
     // - Always allow Escape
-    // - Allow modifier shortcuts (Cmd+K, Cmd+Z, etc.)
-    // - Block single-key shortcuts (1-7, D, C, P, A, etc.)
+    // - Allow Cmd/Alt chords (Cmd+K, Cmd+Z, etc.)
+    // - Block single-key AND shift-only shortcuts (1-7, D, C, P, A, Shift+T, etc.)
     if (isTyping) {
       const isEscape = matchedShortcut.key === 'Escape';
-      if (!isEscape && !hasModifier) {
-        return; // Don't handle single-key shortcuts when typing
+      if (!isEscape && !hasCommandModifier) {
+        return; // Don't handle single-key / shift-only shortcuts when typing
       }
     }
 
     // When a dialog is open:
     // - Always allow Escape (to close dialog)
-    // - Allow modifier shortcuts
-    // - Block single-key shortcuts that might interfere
+    // - Allow Cmd/Alt chords
+    // - Block single-key / shift-only shortcuts that might interfere
     if (dialogOpen) {
       const isEscape = matchedShortcut.key === 'Escape';
       const isCloseAction = matchedShortcut.action === 'closeDialog';
-      if (!isEscape && !isCloseAction && !hasModifier) {
-        return; // Don't handle single-key shortcuts when dialog is open
+      if (!isEscape && !isCloseAction && !hasCommandModifier) {
+        return; // Don't handle single-key / shift-only shortcuts when dialog is open
       }
     }
 

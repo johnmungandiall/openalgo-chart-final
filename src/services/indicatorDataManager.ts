@@ -634,7 +634,8 @@ export class IndicatorDataManager {
   async calculateIndicator(
     indicatorId: string,
     _context: IndicatorContext,
-    ohlcData: Candle[]
+    ohlcData: Candle[],
+    params: Record<string, number> = {}
   ): Promise<IndicatorValue | null> {
     if (!indicatorId || !ohlcData || !Array.isArray(ohlcData) || ohlcData.length < 2) {
       logger.warn(`[IndicatorDataManager] Invalid parameters for calculateIndicator: ${indicatorId}`);
@@ -656,7 +657,7 @@ export class IndicatorDataManager {
 
       switch (type) {
         case 'rsi': {
-          workerResult = await this.runWorkerTask('rsi', slicedData, { period: 14 });
+          workerResult = await this.runWorkerTask('rsi', slicedData, { period: params.period ?? 14 });
           const rsiResult = workerResult as ValueDataPoint[] | null;
           if (rsiResult && rsiResult.length >= 2) {
             const latest = rsiResult[rsiResult.length - 1];
@@ -669,9 +670,9 @@ export class IndicatorDataManager {
 
         case 'macd': {
           workerResult = await this.runWorkerTask('macd', slicedData, {
-            fast: 12,
-            slow: 26,
-            signal: 9,
+            fast: params.fast ?? 12,
+            slow: params.slow ?? 26,
+            signal: params.signal ?? 9,
           });
           const macdResult = workerResult as any | null;
           if (macdResult && macdResult.length >= 2) {
@@ -696,8 +697,8 @@ export class IndicatorDataManager {
         case 'bollingerbands':
         case 'bollinger': {
           workerResult = await this.runWorkerTask('bollingerBands', slicedData, {
-            period: 20,
-            stdDev: 2,
+            period: params.period ?? 20,
+            stdDev: params.stdDev ?? 2,
           });
           const bbResult = workerResult as any | null;
           if (bbResult && bbResult.length >= 2) {
@@ -721,9 +722,9 @@ export class IndicatorDataManager {
 
         case 'stochastic': {
           workerResult = await this.runWorkerTask('stochastic', slicedData, {
-            kPeriod: 14,
-            dPeriod: 3,
-            smooth: 3,
+            kPeriod: params.kPeriod ?? 14,
+            dPeriod: params.dPeriod ?? 3,
+            smooth: params.smooth ?? 3,
           });
           const stochResult = workerResult as any | null;
           if (stochResult && stochResult.length >= 2) {
@@ -737,8 +738,8 @@ export class IndicatorDataManager {
 
         case 'supertrend': {
           workerResult = await this.runWorkerTask('supertrend', slicedData, {
-            period: 300,
-            multiplier: 0.5,
+            period: params.period ?? 300,
+            multiplier: params.multiplier ?? 0.5,
           });
           const stResult = workerResult as any | null;
           if (stResult && stResult.length >= 2) {
@@ -771,7 +772,7 @@ export class IndicatorDataManager {
         }
 
         case 'sma': {
-          workerResult = await this.runWorkerTask('sma', slicedData, { period: 20 });
+          workerResult = await this.runWorkerTask('sma', slicedData, { period: params.period ?? 20 });
           const smaResult = workerResult as ValueDataPoint[] | null;
           if (smaResult && smaResult.length >= 2) {
             const latest = smaResult[smaResult.length - 1];
@@ -783,7 +784,7 @@ export class IndicatorDataManager {
         }
 
         case 'ema': {
-          workerResult = await this.runWorkerTask('ema', slicedData, { period: 20 });
+          workerResult = await this.runWorkerTask('ema', slicedData, { period: params.period ?? 20 });
           const emaResult = workerResult as ValueDataPoint[] | null;
           if (emaResult && emaResult.length >= 2) {
             const latest = emaResult[emaResult.length - 1];
@@ -795,7 +796,7 @@ export class IndicatorDataManager {
         }
 
         case 'atr': {
-          workerResult = await this.runWorkerTask('atr', slicedData, { period: 14 });
+          workerResult = await this.runWorkerTask('atr', slicedData, { period: params.period ?? 14 });
           const atrResult = workerResult as ValueDataPoint[] | null;
           if (atrResult && atrResult.length >= 2) {
             const latest = atrResult[atrResult.length - 1];
@@ -807,8 +808,14 @@ export class IndicatorDataManager {
         }
 
         case 'utbotalerts': {
-          // Main thread execution for smaller indicators works perfectly fine
-          const utBotResult = calculateUTBotAlerts(slicedData as any, 1, 10);
+          // Main thread execution for smaller indicators works perfectly fine.
+          // Use the alert's captured settings so evaluation matches the chart
+          // (keyValues / atrPeriod) instead of hardcoded defaults.
+          const utBotResult = calculateUTBotAlerts(
+            slicedData as any,
+            params.keyValues ?? 1,
+            params.atrPeriod ?? 10
+          );
           if (utBotResult && utBotResult.length >= 2) {
             const latest = utBotResult[utBotResult.length - 1];
             const prev = utBotResult[utBotResult.length - 2];
