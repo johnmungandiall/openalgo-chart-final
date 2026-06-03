@@ -4,21 +4,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Open Chart is a professional trading/charting application built with React 19, TypeScript, and the `lightweight-charts` library. It connects to an OpenAlgo backend (REST API on port 5000, WebSocket on port 8765) for market data and order execution. Designed for localhost-only use.
+Open Chart is a professional trading/charting application built with React 19, TypeScript, and the `lightweight-charts` library. It connects to an OpenAlgo backend (REST API on port 5001, WebSocket on port 8765) for market data and order execution. Designed for localhost-only use. Ships both as a web app (Vite/nginx) and a native desktop app (Tauri).
 
 ## Commands
 
 ```bash
-npm run dev              # Start Vite dev server on port 5001
+npm run dev              # Start Vite dev server on port 5173
 npm run build            # TypeScript compile + Vite production build
+npm run preview          # Serve the production build locally (same proxy as dev)
 npm run lint             # ESLint (JS/JSX only — no TS rules configured)
 npm run lint:fix         # ESLint with auto-fix
 npm run type-check       # TypeScript type checking (tsc --noEmit)
 npm run test             # Vitest unit tests (single run)
 npm run test:watch       # Vitest in watch mode
 npm run test:coverage    # Vitest with V8 coverage
-npm run test:e2e         # Playwright e2e tests (requires dev server on :5001)
+npm run test:e2e         # Playwright e2e tests (auto-starts the dev server)
 npm run test:e2e:ui      # Playwright with interactive UI
+npm run tauri            # Tauri CLI — `npm run tauri dev` / `npm run tauri build` for the desktop app
 ```
 
 Run a single test file: `npx vitest run src/__tests__/riskCalculator.test.ts`
@@ -54,13 +56,17 @@ Strict mode is **disabled** (migration in progress). Many files are excluded fro
 
 - **Unit tests**: Vitest with jsdom environment. Setup file at `tests/setup.ts`. Tests in `src/__tests__/` and `tests/`.
 - **Integration tests**: Under `src/__tests__/integration/indicators/` — these are excluded from Vitest and run via Playwright (`npm run test:e2e`).
-- **E2E tests**: Playwright config in `playwright.config.ts`, tests in `e2e/`. Runs against localhost:5001, Chromium only, sequential (1 worker).
+- **E2E tests**: Playwright config in `playwright.config.ts`, tests in `e2e/`. Chromium only, sequential (1 worker). **Port mismatch:** the config still points `baseURL`/`webServer.url` at `localhost:5001`, but `npm run dev` now serves on `5173` (see Build & Deploy). Playwright auto-starts the dev server but waits on the wrong port — update `playwright.config.ts` to `5173` (or run the app there) before e2e will pass.
 
 ### Build & Deploy
 
-- Vite 7 with React plugin. Dev server proxies `/api` → localhost:5000 and `/ws` → localhost:8765.
-- Docker build: multi-stage (Node 22 build → nginx serve).
-- CI runs lint, type-check, test:coverage, build, and security audit on push to main/develop.
+- Vite 7 with React plugin, dev server on port **5173** (it was moved off 5001 because OpenAlgo's REST API now binds 5001). The same proxy applies to both `dev` and `preview`:
+  - `/api` → `127.0.0.1:5001` (OpenAlgo REST; override with the `OPENALGO_API_TARGET` env var)
+  - `/ws` → `127.0.0.1:8765` (OpenAlgo WebSocket)
+  - `/npl-time` → `nplindia.in` NTP endpoint (server-clock sync; avoids the browser CORS block by keeping requests same-origin)
+- **Desktop app**: Tauri 2 (`src-tauri/`, config in `src-tauri/tauri.conf.json`). `npm run tauri dev` points the webview at `localhost:5173`; `npm run tauri build` runs `npm run build` then bundles an NSIS Windows installer (productName "Open Chart", identifier `in.quantonomous.openchart`).
+- **Web deploy**: Docker multi-stage (Node 22 build → nginx serve).
+- CI (`.github/workflows/ci.yml`) runs lint, type-check, test:coverage, build, and a (non-blocking) `npm audit` security job on push/PR to `main`/`develop`.
 
 ## Autonomous Agent System
 
