@@ -2,6 +2,18 @@
 
 All notable changes to Open Chart will be documented in this file.
 
+## [1.0.5] - 2026-06-05
+
+### Changed
+- **Desktop app icon reverted to the default Tauri icon.** The custom "Open Chart"
+  branded icon (the eagle / "OPEN CHART" mark introduced in the 1.0.3 rebrand) has
+  been removed from the Windows app and the installer. Every `src-tauri/icons/*`
+  asset is restored to the default Tauri icon, and the custom mobile icon sets
+  (`android/`, `ios/`) plus `64x64.png` added during the rebrand were removed. Both
+  the embedded `app.exe` icon and the installer `SetupIconFile` now resolve to the
+  default `src-tauri/icons/icon.ico`.
+  (`src-tauri/icons/`, `src-tauri/tauri.conf.json`, `installer/open-chart.iss`)
+
 ## [1.0.4] - 2026-06-03
 
 ### Added

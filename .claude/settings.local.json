@@ -60,7 +60,21 @@
       "Bash(\"/c/Program Files/Inno Setup 7/ISCC.exe\" installer/qwantereum.iss)",
       "Bash(\"/c/Program Files/Inno Setup 7/ISCC.exe\" installer/open-chart.iss)",
       "Bash(\"C:\\\\Program Files\\\\Inno Setup 7\\\\ISCC.exe\" installer\\\\open-chart.iss)",
-      "Bash(\"C:/Program Files/Inno Setup 7/ISCC.exe\" installer/open-chart.iss)"
+      "Bash(\"C:/Program Files/Inno Setup 7/ISCC.exe\" installer/open-chart.iss)",
+      "Bash(claude mcp *)",
+      "PowerShell($c = Get-Command claude -ErrorAction SilentlyContinue; if \\($c\\) { \"FOUND: $\\($c.Source\\)\" } else { \"NOT ON PATH\" })",
+      "PowerShell(& git check-ignore -v \".claude/settings.local.json\")",
+      "PowerShell(if \\($?\\) { \"TRACKED\" } else { \"NOT TRACKED\" })",
+      "Bash(git log *)",
+      "Bash(git status *)",
+      "Bash(mkdir -p /tmp/iconcheck)",
+      "Bash(git show *)",
+      "Bash(cp src-tauri/icons/icon.png /tmp/iconcheck/current-icon.png)",
+      "Read(//tmp/**)",
+      "Bash(grep -iE \"setup.exe|\\\\.exe$\")",
+      "Bash(set -e)",
+      "Bash(git reset *)",
+      "Bash(awk '!seen[$0]++')"
     ]
   }
 }

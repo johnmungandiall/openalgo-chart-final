@@ -9,7 +9,7 @@
 ; Note: the app renders in the WebView2 runtime, which ships with Windows 10/11.
 
 #define MyAppName "Open Chart"
-#define MyAppVersion "1.0.4"
+#define MyAppVersion "1.0.5"
 #define MyAppPublisher "Quantonomous"
 #define MyAppExeName "Open Chart.exe"
 

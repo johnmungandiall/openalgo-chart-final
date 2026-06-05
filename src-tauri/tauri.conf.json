@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Open Chart",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "identifier": "in.quantonomous.openchart",
   "build": {
     "frontendDist": "../dist",
