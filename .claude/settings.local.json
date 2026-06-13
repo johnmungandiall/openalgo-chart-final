@@ -74,7 +74,10 @@
       "Bash(grep -iE \"setup.exe|\\\\.exe$\")",
       "Bash(set -e)",
       "Bash(git reset *)",
-      "Bash(awk '!seen[$0]++')"
+      "Bash(awk '!seen[$0]++')",
+      "Bash(npx --yes license-checker --production --csv)",
+      "Bash(cargo license *)",
+      "Bash(gh api *)"
     ]
   }
 }

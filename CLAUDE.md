@@ -64,9 +64,21 @@ Strict mode is **disabled** (migration in progress). Many files are excluded fro
   - `/api` → `127.0.0.1:5001` (OpenAlgo REST; override with the `OPENALGO_API_TARGET` env var)
   - `/ws` → `127.0.0.1:8765` (OpenAlgo WebSocket)
   - `/npl-time` → `nplindia.in` NTP endpoint (server-clock sync; avoids the browser CORS block by keeping requests same-origin)
-- **Desktop app**: Tauri 2 (`src-tauri/`, config in `src-tauri/tauri.conf.json`). `npm run tauri dev` points the webview at `localhost:5173`; `npm run tauri build` runs `npm run build` then bundles an NSIS Windows installer (productName "Open Chart", identifier `in.quantonomous.openchart`).
+- **Desktop app**: Tauri 2 (`src-tauri/`, config in `src-tauri/tauri.conf.json`). `npm run tauri dev` points the webview at `localhost:5173`; `npm run tauri build` runs `npm run build`, compiles the Rust shell to `src-tauri/target/release/app.exe`, and bundles an NSIS installer (productName "Open Chart", identifier `in.quantonomous.openchart`).
+- **Distributed installer**: the shipped installer is **Inno Setup**, not the raw NSIS bundle. Build it with `"C:\Program Files\Inno Setup 7\ISCC.exe" installer\open-chart.iss` — it wraps `app.exe` into `installer/Output/Open-Chart-<version>-Setup.exe` (per-user, no admin). This exe is committed to the repo and swapped on each release.
+- **Cutting a release** (see commits `abb913a` 1.0.4, `c477844` 1.0.5 for the pattern): bump the version in **three** files — `package.json`, `src-tauri/tauri.conf.json`, `installer/open-chart.iss` (`Cargo.toml` stays `0.1.0`; Tauri uses `tauri.conf.json`). Add a `docs/CHANGELOG.md` section, `npm run tauri build`, run ISCC, swap the bundled `Open-Chart-*-Setup.exe`, and log a row in `WORK-SUMMARY.md`.
+- **App icon**: lives in `src-tauri/icons/` (referenced by `tauri.conf.json` `bundle.icon` and the installer `SetupIconFile = icon.ico`). As of **1.0.5 the icon is the default Tauri icon** — the custom "Open Chart" eagle branding (added in the 1.0.3 rebrand) was removed. The icon is embedded into `app.exe` at build time, so changing it requires a full `tauri build` + ISCC repackage.
 - **Web deploy**: Docker multi-stage (Node 22 build → nginx serve).
 - CI (`.github/workflows/ci.yml`) runs lint, type-check, test:coverage, build, and a (non-blocking) `npm audit` security job on push/PR to `main`/`develop`.
+
+### Licensing & Distribution (commercial sale)
+
+Open Chart is sold as a **paid, closed-source desktop application**. Full audit in `LEGAL-LICENSING-REPORT.md`. Durable constraints — **do not break these**:
+
+- **Derived from `crypt0inf0/openalgo-chart`** (declared MIT in its README; no formal `LICENSE` file upstream). MIT is permissive → closed-source resale is allowed. Keep the MIT acknowledgement and don't strip upstream attribution.
+- **`lightweight-charts` is Apache-2.0** and requires visible attribution. **Never set `attributionLogo: false`** (`src/components/Chart/ChartComponent.tsx`) and never delete the root **`NOTICE`** file — doing so breaches the license (compliance landed in commit `d95c89f`).
+- **OpenAlgo is AGPL-3.0.** The app only *connects* to it over REST/WS as an independent client — **never bundle, embed, or redistribute OpenAlgo** inside the installer (that would trigger AGPL copyleft). The AGPL `pinets`/Pine Script dependency was deliberately removed in commit `9d6bdfd`; do not reintroduce AGPL/GPL/copyleft dependencies.
+- The app's own `package.json` is `private` / UNLICENSED (proprietary) — intended. "TradingView" is a trademark: keep the attribution link but never brand/market the product as TradingView or imply affiliation.
 
 ## Autonomous Agent System
 
