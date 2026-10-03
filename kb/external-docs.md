@@ -44,8 +44,14 @@ Re-check before quoting a version as current.
 Everything is a caret range, so patch/minor updates already flow in on a fresh
 `npm.cmd install` (that is why this machine resolved Vite 7.3.6 and Vitest 4.1.11).
 The two **major** bumps that would need migration work are **Vite 8** and
-**Vitest 5** — Vite 8 sits behind `vitest.config.ts`/`vite.config.ts` and the CI
-workflow, so treat it as a planned upgrade, not a routine update.
+**Vitest 5**. Vite 8 is not a routine update — it replaces esbuild/Rollup with
+**Rolldown + Oxc**, so `build.rollupOptions` becomes `build.rolldownOptions`, CJS
+interop changed, and it needs **Node 20.19+ / 22.12+**. The official guide offers a
+two-step route: `vite@7` + `rolldown-vite` first, then Vite 8 — that way a failure
+tells you whether Rolldown or another Vite 8 change caused it. Vite 8 sits behind
+`vite.config.ts` / `vitest.config.ts` and the CI workflow (which pins Node 20 — see
+[[gotchas]]), so treat it as a planned upgrade with the guide open:
+https://vite.dev/guide/migration
 
 ## Desktop shell: Tauri 2
 - Docs: **https://v2.tauri.app/** · release notes: `https://v2.tauri.app/release/` (per-package

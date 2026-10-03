@@ -38,7 +38,7 @@ Two runners: **vitest** for unit/component, **Playwright** for E2E. Always
   `e2e/fixtures/risk-calculator.fixture.ts`. Notes: `e2e/README.md`.
 
 ## CI
-`​.github/workflows/ci.yml` — jobs `lint` (eslint + type-check), `test`
+`.github/workflows/ci.yml` — jobs `lint` (eslint + type-check), `test`
 (`npm run test:coverage` → Codecov), `build` (`npm run build`, artifact `dist`),
 `security` (`npm audit --audit-level=high`, continue-on-error) — all on
 **Node 20**. `release.yml` runs unit tests + build on a `v*` tag and attaches a zip
