@@ -1,6 +1,10 @@
 # Changelog — notable changes, newest first.
 
 ## 2026-10-03
+- Built the project knowledge base from the real code: [[overview]], [[architecture]],
+  [[conventions]], [[gotchas]], [[cheatsheet]], [[glossary]] and the deep dives
+  [[features/chart-engine]], [[features/market-data]], [[features/testing]],
+  [[features/activation-licensing]], plus [[external-docs]].
 - Moved the activation/licensing backend off the deleted Supabase project
   `xxfkdfedxvbsrqajdhkv` (NXDOMAIN) onto `ejzyydcpsshgqluforfm`, and applied
   `supabase/migrations/0001_activation_system.sql` + `0002_registration_system.sql`

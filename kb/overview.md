@@ -1,20 +1,48 @@
 # Overview — what this project is and how to run it.
 
-Open Chart (`open-chart`, v1.0.5) — a React 19 + Vite + `lightweight-charts`
-trading/charting app, also packaged as a Windows desktop app via Tauri. Features:
-multi-chart layouts, option-chain / multi-leg strategy charts, ~20 indicators,
-drawing tools, watchlists and price alerts. Market data comes from an
-OpenAlgo-compatible gateway; the app ships pre-pointed at the "Quantonomous
-Router" (REST `127.0.0.1:1100`, WS `127.0.0.1:1200`) — see [[features/activation-licensing]].
+**Open Chart** (`open-chart`, v1.0.5) is a trading/charting desktop-class web app:
+React + TypeScript + Vite in the browser, and the same build wrapped by **Tauri 2**
+into a Windows desktop app. It renders market data with `lightweight-charts` and
+talks to an **OpenAlgo-compatible gateway** for candles, ticks, orders and
+options. Branding/publisher is Quantonomous. Entry `index.html` (title "Open Chart")
+→ `src/main.tsx`.
 
 ## Key entry points
-- `src/main.tsx` — Vite entry: seeds the host/WS localStorage values, then renders `<App/>` wrapped in `ActivationGate`. Entry: `src/main.tsx` (root render block).
-- `src/App.tsx` — the chart application shell (auth, layout, data wiring).
-- `src/components/Activation/ActivationGate.tsx#ActivationGate` — first-run licence/trial gate; blocks the whole app until Supabase grants access.
+- `index.html` — the only HTML page; loads `/src/main.tsx`.
+- `src/main.tsx` — boot: applies the saved theme, force-seeds the router
+  localStorage values, mounts the provider tree, then `ActivationGate` → `App`.
+- `src/App.tsx` — the application shell (~2.5k lines): auth, layout, WebSocket
+  wiring, modals, and the `use*Handlers` hook fan-out.
+- `src/components/Activation/ActivationGate.tsx#ActivationGate` — the licence/trial
+  gate that wraps the whole app; nothing renders until it grants access.
+- `src/components/Chart/ChartComponent.tsx` and `.../ChartGrid.tsx` — the chart pane
+  and the 1–4 pane grid.
+- `src/services/api/config.ts#getApiBase` / `#getWebSocketUrl` — where the backend
+  URL comes from.
+- `src-tauri/tauri.conf.json` — desktop shell (identifier `in.quantonomous.openchart`).
 
 ## How to run
-- `npm.cmd install` (first time) then `npm.cmd run dev` → http://localhost:5173/
-- Use **`npm.cmd`**: `npm.ps1` is blocked by the PowerShell execution policy on this machine.
+- `npm.cmd run dev` → Vite on **http://localhost:5173/**
+- `npm.cmd install` first time; `npm.cmd run build` for `tsc -b && vite build`.
+- Use **`npm.cmd`**, not `npm`: `npm.ps1` is blocked by the PowerShell execution
+  policy on this machine.
+- The app needs a **live licensing backend** (Supabase) and a **reachable gateway**
+  before it shows charts — see [[features/activation-licensing]] and
+  [[features/market-data]].
 
-See [[cheatsheet]] for the other scripts and [[features/activation-licensing]] for the
-licensing backend the app needs alive before it will start.
+## Scripts
+`dev`, `build`, `preview`, `lint`, `lint:fix`, `type-check`, `test` (vitest),
+`test:coverage`, `test:e2e` (Playwright), `tauri` — all in `package.json`.
+
+## Shape of the repo
+- `src/` — the whole front end (~378 files): `components/`, `hooks/`, `services/`,
+  `store/`, `plugins/`, `utils/`, `types/`, `context/`.
+- `src-tauri/` — Tauri desktop shell; `installer/` — Inno Setup script.
+- `supabase/migrations/` — the licensing SQL.
+- `activator/activator/` — a **separate** Flutter scaffold app, not part of the web build.
+- `docs/` — architecture, plans, testing and audit write-ups; the root `*.md`
+  status files (e.g. `ALERT_SYSTEM_STATUS.md`, `WHY_ALERTS_NOT_TRIGGERING.md`) are
+  point-in-time investigation notes, not current documentation.
+- `e2e/`, `tests/`, `src/__tests__/` — see [[features/testing]].
+
+See [[architecture]] for the pieces, [[cheatsheet]] for commands, [[gotchas]] for traps.
