@@ -7,11 +7,11 @@
  * the client (or committing it) is safe. Override via env if you ever rotate it.
  */
 export const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL || 'https://xxfkdfedxvbsrqajdhkv.supabase.co';
+  import.meta.env.VITE_SUPABASE_URL || 'https://ejzyydcpsshgqluforfm.supabase.co';
 
 export const SUPABASE_ANON_KEY =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4ZmtkZmVkeHZic3JxYWpkaGt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMjkwOTYsImV4cCI6MjA5NTYwNTA5Nn0.Q2KaskLHrDp2Ys5Sj4-MV_tUZXgthEo-kEAZ7DkKLyI';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqenl5ZGNwc3NoZ3FsdWZvcmZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA5NjQ5MjQsImV4cCI6MjEwNjU0MDkyNH0.3itli6BLYKIzZ1uf-FHEwLjj402ViIBNx7MJVKKOx_U';
 
 /** localStorage key under which a validated license key is cached. */
 export const LICENSE_KEY_STORAGE = 'oa_license_key';
