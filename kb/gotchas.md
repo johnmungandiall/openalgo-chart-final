@@ -23,7 +23,7 @@
   a failed call, not an empty result.
 - **Playwright's `baseURL` is stale.** `playwright.config.ts` points at
   `http://localhost:5001` and starts `npm run dev` on that URL, but Vite now serves
-  **5173** (`vite.config.ts#server.port`, moved off 5001 because OpenAlgo's REST API
+  **5173** (the `server.port` value in `vite.config.ts`, moved off 5001 because OpenAlgo's REST API
   binds it). E2E runs need the config updated or a server started on the expected URL.
 - **`src/__tests__/integration/**` is excluded from vitest** (it holds Playwright
   specs) — see `vitest.config.ts`. Do not expect `npm.cmd run test` to cover it.

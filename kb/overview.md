@@ -16,7 +16,7 @@ options. Branding/publisher is Quantonomous. Entry `index.html` (title "Open Cha
 - `src/components/Activation/ActivationGate.tsx#ActivationGate` — the licence/trial
   gate that wraps the whole app; nothing renders until it grants access.
 - `src/components/Chart/ChartComponent.tsx` and `.../ChartGrid.tsx` — the chart pane
-  and the 1–4 pane grid.
+  and the multi-pane grid (pane set: `src/types/domain/workspace.ts#LayoutType`).
 - `src/services/api/config.ts#getApiBase` / `#getWebSocketUrl` — where the backend
   URL comes from.
 - `src-tauri/tauri.conf.json` — desktop shell (identifier `in.quantonomous.openchart`).

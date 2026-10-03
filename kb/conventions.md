@@ -4,7 +4,7 @@
 - **TypeScript + React function components.** Strict typing on the domain types in
   `src/types/`; eslint flat config in `eslint.config.js`, type-checked with
   `npm.cmd run type-check` (tsconfig.json + tsconfig.node.json).
-- **Import aliases come from `vite.config.ts#resolve.alias`** — `@/`, `@components/`,
+- **Import aliases come from the `resolve.alias` map in `vite.config.ts`** — `@/`, `@components/`,
   `@hooks/`, `@services/`, `@utils/`, `@context/`, `@types/`, `@store/`,
   `@constants/`. Older modules under `src/services/` still use relative imports.
 - **Styling: CSS Modules** (`Component.module.css`) beside each component; a few
@@ -29,11 +29,12 @@
 
 ## Tests (see [[features/testing]])
 - Unit/component: **vitest** (`vitest.config.ts`), jsdom, `tests/setup.ts`. Files:
-  `src/__tests__/*.test.ts(x)`, `src/__tests__/{indicators,integration}/**`,
-  `tests/unit/**`. Backend calls are mocked with **msw**
-  (`tests/mocks/server.ts`, `handlers.ts`; fixtures in `tests/fixtures/`).
+  `src/__tests__/*.test.ts(x)`, `src/__tests__/indicators/**`, `tests/unit/**`.
+  Backend calls are mocked with **msw** (`tests/mocks/server.ts`, `handlers.ts`;
+  fixtures in `tests/fixtures/`).
 - E2E: **Playwright** (`playwright.config.ts`), specs in `e2e/`, page object in
-  `e2e/fixtures/`.
+  `e2e/fixtures/`; `src/__tests__/integration/**` runs here too and is **excluded**
+  from vitest.
 - Indicator tests are grouped by kind: `src/__tests__/indicators/{oscillators,overlay,
   primitives,strategies}/`.
 

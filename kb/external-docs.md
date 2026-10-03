@@ -38,6 +38,8 @@ Re-check before quoting a version as current.
 | zustand | ^5.0.10 | 5.0.15 |
 | vitest | ^4.0.16 | 5.0.3 |
 | @playwright/test | ^1.57.0 | 1.63.0 |
+| @tauri-apps/cli | ^2.11.2 | 2.12.1 |
+| @tauri-apps/api | ^2.11.0 | 2.12.1 |
 
 Everything is a caret range, so patch/minor updates already flow in on a fresh
 `npm.cmd install` (that is why this machine resolved Vite 7.3.6 and Vitest 4.1.11).
@@ -46,8 +48,12 @@ The two **major** bumps that would need migration work are **Vite 8** and
 workflow, so treat it as a planned upgrade, not a routine update.
 
 ## Desktop shell: Tauri 2
-- Docs: **https://v2.tauri.app/** · CLI/API pinned as `@tauri-apps/cli` ^2.11.2 and
-  `@tauri-apps/api` ^2.11.0; config `src-tauri/tauri.conf.json` (see [[cheatsheet]]).
+- Docs: **https://v2.tauri.app/** · release notes: `https://v2.tauri.app/release/` (per-package
+  changelogs) and `https://github.com/tauri-apps/tauri/releases`.
+- Pinned: `@tauri-apps/cli` ^2.11.2 and `@tauri-apps/api` ^2.11.0; both are at
+  **2.12.1** on npm (2026-10-03). Config: `src-tauri/tauri.conf.json` ([[cheatsheet]]).
+- Uses the WebView2 runtime, which ships with Windows 10/11 — no separate installer
+  for the end user (see `installer/open-chart.iss`).
 
 ## Ecosystem / community
 - OpenAlgo community and docs hub: https://www.openalgo.in/ (docs, downloads, academy).

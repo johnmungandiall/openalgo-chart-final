@@ -30,7 +30,7 @@ Two runners: **vitest** for unit/component, **Playwright** for E2E. Always
   120s timeout, html + list reporters, traces on first retry.
 - ⚠ It is **stale against the dev server**: `baseURL` and the `webServer` URL are
   both `http://localhost:5001`, while Vite serves **5173**
-  (`vite.config.ts#server.port`, moved off 5001 because OpenAlgo's REST API binds it).
+  (the `server.port` value in `vite.config.ts`, moved off 5001 because OpenAlgo's REST API binds it).
   E2E needs that updated (or a server on the expected URL) before it will pass.
 - Specs: `e2e/risk-calculator/` — `activation`, `panel-inputs`, `auto-detect-side`,
   `draggable-lines`, `validation`, `templates`, `integration` — plus `debug.spec.ts`
